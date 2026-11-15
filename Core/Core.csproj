@@ -1,0 +1,11 @@
+<Project Sdk="Godot.NET.Sdk/4.6.1">
+	<PropertyGroup>
+		<AssemblyName>Injectra.Godot</AssemblyName>
+		<RootNamespace>Injectra.Godot</RootNamespace>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Injectra" Version="0.5.0-alpha.1"/>
+	</ItemGroup>
+</Project>
