@@ -15,6 +15,10 @@ run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 config/icon="res://addon/icons/icon.png"
 
+[autoload]
+
+ProjectScope="*res://Demo/ProjectScope.tscn"
+
 [dotnet]
 
 project/assembly_name="Injectra.Godot"

@@ -67,7 +67,7 @@ internal sealed class MethodInjector
 	}
 
 	/// <summary>Injects the root and its descendants in parent-first order.</summary>
-	/// <remarks>Does not scan resources or alter the scene tree. Skips descendant scopes. Call explicitly before AddChild for pre-tree injection.</remarks>
+	/// <remarks>Does not scan resources or alter the scene tree. Descendant scopes prepare their own containers. Call before AddChild for pre-tree injection.</remarks>
 	/// <exception cref="ArgumentNullException">The root is null.</exception>
 	/// <exception cref="ObjectDisposedException">A node has been freed.</exception>
 	/// <exception cref="InjectionException">Injection fails on a node. Earlier injections are not rolled back.</exception>
@@ -76,7 +76,14 @@ internal sealed class MethodInjector
 		ArgumentNullException.ThrowIfNull(root);
 		Inject(root);
 		foreach (var child in root.GetChildren())
-			if (child is not InjectraScope)
+			if (child is InjectraScope scope)
+			{
+				if (_resolver is not Container owner)
+					throw new InvalidOperationException("Preparing a scope subtree requires a container-backed resolver.");
+
+				scope.Prepare(parentContainer: owner);
+			}
+			else
 				InjectTree(child);
 	}
 

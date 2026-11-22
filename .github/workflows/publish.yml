@@ -1,0 +1,102 @@
+name: Publish Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GODOT_VERSION: 4.6.1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Validate release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="$(dotnet msbuild Core/Core.csproj -getProperty:Version)"
+          if [[ "$RELEASE_TAG" != "v$version" ]]; then
+            echo "::error::Release tag '$RELEASE_TAG' must match project version 'v$version'."
+            exit 1
+          fi
+          echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: dotnet build Injectra.Godot.slnx --configuration Debug
+
+      - name: Install Godot .NET
+        run: |
+          bundle="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"
+          curl --fail --location --retry 3 \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/${bundle}.zip" \
+            --output "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          echo "GODOT_BIN=$RUNNER_TEMP/godot/$bundle/${bundle%_mono_linux_x86_64}_mono_linux.x86_64" >> "$GITHUB_ENV"
+
+      - name: Import Godot project
+        run: timeout 60 "$GODOT_BIN" --headless --path Core --editor --import
+
+      - name: Run Godot tests
+        run: |
+          timeout 60 "$GODOT_BIN" --headless --path Core res://Tests/LifecycleTests.tscn 2>&1 | tee "$RUNNER_TEMP/godot-tests.log"
+          grep -q '^PASS: Autoload project lifetime' "$RUNNER_TEMP/godot-tests.log"
+          if grep -Eq '^(ERROR:|SCRIPT ERROR:)' "$RUNNER_TEMP/godot-tests.log"; then
+            exit 1
+          fi
+
+      - name: Package addon
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+
+          output = Path("release")
+          output.mkdir(exist_ok=True)
+          destination = Path("addons/Injectra.Godot")
+          version = os.environ["PACKAGE_VERSION"]
+          with ZipFile(output / f"Injectra.Godot-{version}.zip", "w", ZIP_DEFLATED) as archive:
+              for source in sorted(Path("Core/addon").rglob("*")):
+                  if not source.is_file() or source.suffix not in {".cs", ".uid", ".png", ".svg", ".md"}:
+                      continue
+                  content = source.read_bytes()
+                  if source.suffix == ".cs":
+                      content = content.replace(b"res://addon/", b"res://addons/Injectra.Godot/")
+                  archive.writestr(str(destination / source.relative_to("Core/addon")), content)
+              archive.write("LICENSE", str(destination / "LICENSE"))
+          PY
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          archive="release/Injectra.Godot-${PACKAGE_VERSION}.zip"
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$archive" --clobber
+          else
+            options=(--verify-tag --generate-notes --title "$RELEASE_TAG")
+            if [[ "$PACKAGE_VERSION" == *-* ]]; then
+              options+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" "$archive" "${options[@]}"
+          fi

@@ -18,6 +18,7 @@ public partial class LifecycleTests : Node
 			ReadyDoesNotRepeatWithoutRequestReady();
 			InjectionTests.Run(this);
 			ScopeTests.Run(this);
+			ProjectScopeTests.Run(this);
 			GD.Print("PASS: 3 Godot lifecycle tests, .NET 11, Injectra integration.");
 			GetTree().Quit();
 		}

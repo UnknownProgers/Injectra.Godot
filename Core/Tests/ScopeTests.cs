@@ -39,11 +39,12 @@ internal static class ScopeTests
 		InjectionNode.Created.Clear();
 
 		var root = new InjectraScope { Injection = SceneInjection.Tree, Installers = [installer] };
-		var nested = new ScopeProbe();
+		var nestedDependency = new InjectionDependency();
+		var nested = new ScopeProbe { ConfigureRegistrations = builder => builder.RegisterInstance(nestedDependency) };
 		root.AddChild(nested);
 		root.Prepare();
-		Check(nested.Dependency is null, "A parent injector must not inject a nested scope using the parent's container.");
-		Throws<InvalidOperationException>(() => nested.Prepare());
+		Check(ReferenceEquals(nested.Dependency, nestedDependency) && nested.Injections == 1, "A nested scope must inject once using its own overrides.");
+		Check(!ReferenceEquals(nested.Factory, root.Container.Resolve<SceneFactory>()), "Each scope must have its own scene factory.");
 		root.Free();
 
 		var disposedOnFailure = new OwnedService();
@@ -93,7 +94,8 @@ internal static class ScopeTests
 		instance.Free();
 
 		var hostScope = new InjectraScope();
-		Throws<InvalidOperationException>(() => factory.Instantiate<ScopeProbe>(scene, hostScope));
+		instance = factory.Instantiate<ScopeProbe>(scene, hostScope);
+		Check(instance.Injections == 1, "A factory must support creating a scope under another scope.");
 		hostScope.Free();
 		InjectionNode.Created.Clear();
 	}

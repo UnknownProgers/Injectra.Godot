@@ -3,11 +3,12 @@ using Godot.Collections;
 
 namespace Injectra.Godot;
 
-/// <summary>Builds a root container and injects the selected nodes when entering the scene tree.</summary>
+/// <summary>Builds a container and injects the selected nodes when entering the scene tree.</summary>
 /// <remarks>
 /// Preparation runs in this node's EnterTree callback, before descendant EnterTree and Ready callbacks.
 /// Leaving the tree permanently closes the scope. A closed scope cannot be reused.
-/// Nested scopes and automatic lifecycle dispatch are not supported yet.
+/// Inherits the nearest ancestor scope, then the active project scope, or builds an independent root.
+/// Factory-created scopes use the factory's container as their explicit parent. Automatic lifecycle dispatch is not supported yet.
 /// </remarks>
 [GlobalClass]
 [Icon("res://addon/icons/scope.svg")]
@@ -29,7 +30,7 @@ public partial class InjectraScope : Node
 	public Container Container => _container ?? throw new InvalidOperationException("The scope is not prepared or has already closed.");
 
 	/// <summary>Prepares registrations and injection before descendants enter the tree.</summary>
-	/// <exception cref="InvalidOperationException">The scope is closed or nested inside another scope.</exception>
+	/// <exception cref="InvalidOperationException">The scope is closed, or project scope configuration is invalid.</exception>
 	/// <exception cref="ArgumentOutOfRangeException">The injection mode is invalid.</exception>
 	/// <exception cref="RegistrationException">Container registrations are invalid.</exception>
 	/// <exception cref="InjectionException">A method signature, dependency, or injection method fails.</exception>
@@ -52,7 +53,7 @@ public partial class InjectraScope : Node
 	/// <remarks>Override to invoke plain IInstaller implementations or register services directly.</remarks>
 	protected virtual void Configure(ContainerBuilder builder) { }
 
-	internal void Prepare(Node? parent = null)
+	internal void Prepare(Node? parent = null, Container? parentContainer = null)
 	{
 		if (_closed)
 			throw new InvalidOperationException("A closed scope cannot be prepared again.");
@@ -60,14 +61,64 @@ public partial class InjectraScope : Node
 		if (Injection is not (SceneInjection.Root or SceneInjection.Tree))
 			throw new ArgumentOutOfRangeException(nameof(Injection), Injection, "Unsupported scope injection mode.");
 
-		for (var ancestor = parent ?? GetParent(); ancestor is not null; ancestor = ancestor.GetParent())
-			if (ancestor is InjectraScope)
-				throw new InvalidOperationException("Nested scopes are not supported yet.");
-
 		if (_container is not null)
 			return;
 
-		var builder = new ContainerBuilder();
+		try
+		{
+			if (this is InjectraProjectScope project)
+			{
+				for (var ancestor = parent ?? GetParent(); ancestor is not null; ancestor = ancestor.GetParent())
+					if (ancestor is InjectraScope)
+						throw new InvalidOperationException("A project scope cannot be nested inside another scope.");
+
+				project.Activate();
+				parentContainer = null;
+			}
+			else
+			{
+				parentContainer ??= FindParentContainer(parent ?? GetParent());
+			}
+
+			if (parentContainer is not null)
+				_container = parentContainer.CreateChild(Install);
+			else
+			{
+				var builder = new ContainerBuilder();
+				Install(builder);
+				_container = builder.Build();
+			}
+
+			var injector = new MethodInjector(_container);
+			if (Injection == SceneInjection.Tree)
+				injector.InjectTree(this);
+			else
+				injector.Inject(this);
+		}
+		catch (Exception setupError)
+		{
+			try { Close(); }
+			catch (Exception cleanupError)
+			{
+				throw new AggregateException("Scope setup and container cleanup failed.", setupError, cleanupError);
+			}
+			throw;
+		}
+	}
+
+	private Container? FindParentContainer(Node? parent)
+	{
+		for (var ancestor = parent; ancestor is not null; ancestor = ancestor.GetParent())
+			if (ancestor is InjectraScope scope)
+			{
+				return scope.Container;
+			}
+
+		return InjectraProjectScope.Active?.Container;
+	}
+
+	private void Install(ContainerBuilder builder)
+	{
 		foreach (var installer in Installers)
 		{
 			if (installer is null || !IsInstanceValid(installer))
@@ -78,31 +129,18 @@ public partial class InjectraScope : Node
 
 		Configure(builder);
 		builder.RegisterInstance<InjectraScope>(this);
-		builder.Register<SceneFactory>(static resolver => new SceneFactory(resolver), Lifetime.Singleton);
-		_container = builder.Build();
+		if (this is InjectraProjectScope project)
+			builder.RegisterInstance(project);
 
-		try
-		{
-			var injector = new MethodInjector(_container);
-			if (Injection == SceneInjection.Tree)
-				injector.InjectTree(this);
-			else
-				injector.Inject(this);
-		}
-		catch (Exception injectionError)
-		{
-			try { Close(); }
-			catch (Exception cleanupError)
-			{
-				throw new AggregateException("Scope injection and container cleanup failed.", injectionError, cleanupError);
-			}
-			throw;
-		}
+		builder.Register<SceneFactory>(static resolver => new SceneFactory(resolver), Lifetime.Singleton);
 	}
 
 	private void Close()
 	{
 		_closed = true;
+		if (this is InjectraProjectScope project)
+			project.Deactivate();
+
 		var container = _container;
 		_container = null;
 		container?.Dispose();
