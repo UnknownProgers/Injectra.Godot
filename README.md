@@ -186,7 +186,21 @@ In `Tree` mode, nested scopes are prepared before attachment. `Root` mode does n
 those prepare when Godot enters them into the tree.
 
 Calling `PackedScene.Instantiate()` and `AddChild()` directly does not route ordinary nodes through the addon.
-Explicit `PackedScene` arguments are required; a type-to-scene registry is not implemented yet.
+For creation by type, create a `SceneRegistry` resource and assign it to a scope's **SceneRegistry** property
+(usually the project scope). Add `SceneRegistration` entries with a C# **Script** and its **Scene**:
+
+```csharp
+var player = _scenes.Instantiate<Player>(parent);
+var detached = _scenes.Instantiate<Player>();
+var squad = _scenes.Instantiate<Squad>(parent, injection: SceneInjection.Tree);
+```
+
+Mappings use the exact script type. Children inherit parent mappings and can override individual types through a local registry.
+Mappings are snapshotted during scope preparation; editing the resource afterwards does not change a prepared factory.
+Duplicate local keys and incomplete entries fail during preparation. Missing mappings and incompatible roots fail during creation.
+The selected script must belong to a Godot C# node type. No nodes are instantiated to discover registry keys.
+If several scenes share the same script, register one default and use the explicit `PackedScene` overload for alternatives.
+The demo project scope registers `DemoActor`; scene and child factories inherit this mapping while using their own dependencies.
 
 ## Initialization order
 

@@ -1,9 +1,8 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://addon/InjectraScope.cs" id="1_scope"]
 [ext_resource type="Script" path="res://Demo/DemoInstaller.cs" id="2_installer"]
 [ext_resource type="Script" path="res://Demo/DemoController.cs" id="3_controller"]
-[ext_resource type="PackedScene" path="res://Demo/DemoActor.tscn" id="4_actor"]
 [ext_resource type="PackedScene" path="res://Demo/DemoChildScope.tscn" id="5_child"]
 [ext_resource type="PackedScene" path="res://Demo/DemoInheritedChildScope.tscn" id="6_inherited"]
 [ext_resource type="Script" path="res://Demo/DemoDependencyTree.cs" id="7_tree"]
@@ -30,7 +29,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 script = ExtResource("3_controller")
-ActorScene = ExtResource("4_actor")
 ChildScopeScene = ExtResource("5_child")
 InheritedChildScopeScene = ExtResource("6_inherited")
 DependencyTree = NodePath("DependencyTree")

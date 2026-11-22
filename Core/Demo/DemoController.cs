@@ -4,7 +4,6 @@ namespace Injectra.Godot.Demo;
 
 public partial class DemoController : VBoxContainer
 {
-	[Export] public PackedScene ActorScene { get; set; } = null!;
 	[Export] public PackedScene ChildScopeScene { get; set; } = null!;
 	[Export] public PackedScene InheritedChildScopeScene { get; set; } = null!;
 
@@ -119,7 +118,7 @@ public partial class DemoController : VBoxContainer
 
 	private void Spawn(Branch branch)
 	{
-		var actor = branch.Scenes.Instantiate<DemoActor>(ActorScene, ActorParent(branch));
+		var actor = branch.Scenes.Instantiate<DemoActor>(ActorParent(branch));
 		if (!ReferenceEquals(actor.Session, branch.Session) || !ReferenceEquals(actor.Project, _project)
 			|| !ReferenceEquals(actor.Settings, branch.Session.Settings))
 			throw new InvalidOperationException("Actor dependencies do not match the selected scope.");

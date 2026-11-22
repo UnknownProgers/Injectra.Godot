@@ -31,3 +31,16 @@ The shared order is build, method injection, initialization, then ticks. Scopes 
 
 See the [full documentation](https://github.com/UnknownProgers/Injectra.Godot#readme) for examples, initialization order,
 ownership rules, and current limitations. Distributed under the MIT license included in this directory.
+
+## Scene registry
+
+Assign a `SceneRegistry` resource to a scope (usually the project scope). Its `Entries` contain
+`SceneRegistration` resources: select the C# node `Script` and its `Scene`.
+
+```csharp
+var player = scenes.Instantiate<Player>(parent);
+```
+
+Children inherit mappings and may override individual types with a local registry. Keys are exact C# types.
+Mappings are fixed when the scope is prepared. Duplicate keys and incomplete entries are rejected.
+Use `Instantiate<Player>(packedScene, parent)` when choosing between scenes sharing the same script.

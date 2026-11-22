@@ -23,6 +23,10 @@ public partial class InjectraScope : Node
 	[Export]
 	public Array<ResourceInstaller> Installers { get; set; } = [];
 
+	/// <summary>Optional scene mappings. Missing types fall back to ancestor scopes.</summary>
+	[Export]
+	public SceneRegistry? SceneRegistry { get; set; }
+
 	/// <summary>Selects root-only injection by default, or explicit injection of descendants.</summary>
 	[Export]
 	public SceneInjection Injection { get; set; } = SceneInjection.Root;
@@ -96,11 +100,11 @@ public partial class InjectraScope : Node
 			}
 
 			if (parentContainer is not null)
-				_container = parentContainer.CreateChild(Install, InjectNodes);
+				_container = parentContainer.CreateChild(builder => Install(builder, parentContainer), InjectNodes);
 			else
 			{
 				var builder = new ContainerBuilder();
-				Install(builder);
+				Install(builder, null);
 				builder.UseLifecycle(ConfigureLifecycle);
 				_container = builder.Build(InjectNodes);
 				_lifecycle = _container.Resolve<InjectraLifecycle>();
@@ -139,8 +143,12 @@ public partial class InjectraScope : Node
 		return InjectraProjectScope.Active?.Container;
 	}
 
-	private void Install(ContainerBuilder builder)
+	private void Install(ContainerBuilder builder, Container? parentContainer)
 	{
+		if (SceneRegistry is not null && !IsInstanceValid(SceneRegistry))
+			throw new InvalidOperationException("The scene registry has been freed.");
+
+		var scenes = SceneRegistry?.CreateLookup();
 		foreach (var installer in Installers)
 		{
 			if (installer is null || !IsInstanceValid(installer))
@@ -154,7 +162,11 @@ public partial class InjectraScope : Node
 		if (this is InjectraProjectScope project)
 			builder.RegisterInstance(project);
 
-		builder.Register<SceneFactory>(static resolver => new SceneFactory(resolver), Lifetime.Singleton);
+		builder.Register<SceneFactory>(resolver =>
+		{
+			var parentFactory = parentContainer?.ResolveAll<SceneFactory>().SingleOrDefault();
+			return new SceneFactory(resolver, scenes, parentFactory);
+		}, Lifetime.Singleton);
 	}
 
 	private void Close()

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Godot;
 
 namespace Injectra.Godot;
@@ -7,6 +8,15 @@ public sealed class SceneFactory
 {
 	private readonly MethodInjector _injector;
 	private readonly IResolver _resolver;
+	private readonly Dictionary<string, PackedScene>? _scenes;
+	private readonly SceneFactory? _parent;
+
+	internal SceneFactory(IResolver resolver, Dictionary<string, PackedScene>? scenes, SceneFactory? parent)
+		: this(resolver)
+	{
+		_scenes = scenes;
+		_parent = parent;
+	}
 
 	/// <summary>Creates a factory whose dependencies are resolved from the supplied resolver.</summary>
 	/// <exception cref="ArgumentNullException">The resolver is null.</exception>
@@ -14,6 +24,26 @@ public sealed class SceneFactory
 	{
 		_injector = new MethodInjector(resolver);
 		_resolver = resolver;
+	}
+
+	/// <summary>Creates the scene registered for the exact C# node type, using the nearest scope mapping.</summary>
+	/// <remarks>Uses the same injection, placement and ownership rules as the PackedScene overload.</remarks>
+	/// <exception cref="InvalidOperationException">No scene is registered for T, or scope configuration is invalid.</exception>
+	/// <exception cref="ObjectDisposedException">The scene or parent has been freed.</exception>
+	/// <exception cref="ArgumentException">The scene cannot be instantiated or the parent is queued for deletion.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">The injection mode is not supported.</exception>
+	/// <exception cref="InvalidCastException">The registered scene root is not assignable to T.</exception>
+	/// <exception cref="InjectionException">Injection fails.</exception>
+	/// <exception cref="RegistrationException">A scope's container registrations are invalid.</exception>
+	/// <exception cref="AggregateException">Both scope injection and cleanup fail.</exception>
+	public T Instantiate<T>(Node? parent = null, SceneInjection injection = SceneInjection.Root) where T : Node
+	{
+		var path = ScriptPath<T>.Value;
+		var scene = path is null ? null : FindScene(path);
+		if (scene is null)
+			throw new InvalidOperationException($"No scene is registered for {typeof(T)}.");
+
+		return Instantiate<T>(scene, parent, injection);
 	}
 
 	/// <summary>Creates a scene, injects the selected nodes, and optionally adds its root to a parent.</summary>
@@ -72,6 +102,19 @@ public sealed class SceneFactory
 				instance.Free();
 			throw;
 		}
+	}
+
+	private PackedScene? FindScene(string path)
+	{
+		if (_scenes is not null && _scenes.TryGetValue(path, out var scene))
+			return scene;
+
+		return _parent?.FindScene(path);
+	}
+
+	private static class ScriptPath<T> where T : Node
+	{
+		internal static readonly string? Value = typeof(T).GetCustomAttribute<ScriptPathAttribute>(inherit: false)?.Path;
 	}
 
 	private static void ValidateParent(Node? parent)

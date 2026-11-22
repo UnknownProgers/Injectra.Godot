@@ -125,7 +125,7 @@ internal static class InjectionTests
 		Check(InjectionNode.Created.Count == 1 && !GodotObject.IsInstanceValid(InjectionNode.Created[0]), "A user exception must free the failed scene.");
 		InjectionNode.Created.Clear();
 
-		Throws<ArgumentNullException>(() => factory.Instantiate<Node>(null!));
+		Throws<ArgumentNullException>(() => factory.Instantiate<Node>(scene: null!));
 		using var unpacked = new PackedScene();
 		Throws<ArgumentException>(() => factory.Instantiate<Node>(unpacked));
 		var freedParent = new Node();
