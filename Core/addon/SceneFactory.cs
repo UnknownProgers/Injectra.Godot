@@ -16,6 +16,7 @@ public sealed class SceneFactory
 	/// The parent controls placement, not dependency resolution. Without a parent the returned root remains detached.
 	/// The caller or scene tree owns a successful instance. A failed instance is freed immediately.
 	/// By default only the root is injected, without traversing descendants. Tree mode injects the entire subtree.
+	/// A scope root prepares its own container and uses its own injection setting instead of this argument.
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">The scene is null.</exception>
 	/// <exception cref="ObjectDisposedException">The scene or parent has been freed.</exception>
@@ -23,6 +24,9 @@ public sealed class SceneFactory
 	/// <exception cref="ArgumentOutOfRangeException">The injection mode is not supported.</exception>
 	/// <exception cref="InvalidCastException">The scene root is not assignable to T.</exception>
 	/// <exception cref="InjectionException">Injection fails.</exception>
+	/// <exception cref="InvalidOperationException">A scope configuration is invalid or a nested scope is requested.</exception>
+	/// <exception cref="RegistrationException">A scope's container registrations are invalid.</exception>
+	/// <exception cref="AggregateException">Both scope injection and cleanup fail.</exception>
 	public T Instantiate<T>(PackedScene scene, Node? parent = null, SceneInjection injection = SceneInjection.Root) where T : Node
 	{
 		ArgumentNullException.ThrowIfNull(scene);
@@ -43,7 +47,9 @@ public sealed class SceneFactory
 			if (instance is not T typed)
 				throw new InvalidCastException($"Scene {scene.ResourcePath} has root {instance.GetType()}, expected {typeof(T)}.");
 
-			if (injection == SceneInjection.Tree)
+			if (instance is InjectraScope scope)
+				scope.Prepare(parent);
+			else if (injection == SceneInjection.Tree)
 				_injector.InjectTree(instance);
 			else
 				_injector.Inject(instance);

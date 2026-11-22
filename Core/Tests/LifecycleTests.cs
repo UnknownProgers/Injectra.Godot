@@ -17,6 +17,7 @@ public partial class LifecycleTests : Node
 			PackedSceneCanBePreparedBeforeAddChild();
 			ReadyDoesNotRepeatWithoutRequestReady();
 			InjectionTests.Run(this);
+			ScopeTests.Run(this);
 			GD.Print("PASS: 3 Godot lifecycle tests, .NET 11, Injectra integration.");
 			GetTree().Quit();
 		}

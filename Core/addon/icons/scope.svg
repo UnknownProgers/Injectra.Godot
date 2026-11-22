@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+	<!-- Compact Godot head and Injectra cube, drawn for the editor's 16 px icon slot. -->
+	<path fill="#48D8EF" d="M4 2V1h2v1h1V0h2v2h1V1h2v1h1v4l-2 1H5L3 6V2z"/>
+	<path fill="#172C50" d="M5 3h2v2H5zm4 0h2v2H9z"/>
+	<path fill="none" stroke="#FFFFFF" stroke-width="1" d="M5 5.5v1h2v-1h2v1h2v-1"/>
+	<path fill="#48D8EF" d="M7.5 7h1v2h-1z"/>
+	<path fill="#98ECFA" d="m8 8 6 2.5L8 13l-6-2.5z"/>
+	<path fill="#A668F2" d="m2 10.5 6 2.5v3l-6-2.5z"/>
+	<path fill="#36C9E8" d="m14 10.5-6 2.5v3l6-2.5z"/>
+</svg>

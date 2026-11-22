@@ -1,3 +1,23 @@
-[gd_scene format=3]
+[gd_scene load_steps=6 format=3]
 
-[node name="Main" type="Node2D"]
+[ext_resource type="Script" path="res://addon/InjectraScope.cs" id="1_scope"]
+[ext_resource type="Script" path="res://Demo/DemoInstaller.cs" id="2_installer"]
+[ext_resource type="Script" path="res://Demo/DemoController.cs" id="3_controller"]
+[ext_resource type="PackedScene" path="res://Demo/DemoActor.tscn" id="4_actor"]
+
+[sub_resource type="Resource" id="Resource_installer"]
+script = ExtResource("2_installer")
+
+[node name="GameScope" type="Node"]
+script = ExtResource("1_scope")
+Installers = Array[ExtResource("2_installer")]([SubResource("Resource_installer")])
+Injection = 1
+
+[node name="DemoController" type="VBoxContainer" parent="."]
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 800.0
+offset_bottom = 400.0
+theme_override_constants/separation = 16
+script = ExtResource("3_controller")
+ActorScene = ExtResource("4_actor")

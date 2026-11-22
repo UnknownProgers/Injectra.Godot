@@ -5,7 +5,7 @@ using Godot;
 namespace Injectra.Godot;
 
 /// <summary>Injects explicitly marked methods using one resolver. Intended for use on the Godot main thread.</summary>
-public sealed class MethodInjector
+internal sealed class MethodInjector
 {
 	private readonly IResolver _resolver;
 	private readonly Dictionary<Type, InjectionMethod[]> _methods = [];
@@ -67,7 +67,7 @@ public sealed class MethodInjector
 	}
 
 	/// <summary>Injects the root and its descendants in parent-first order.</summary>
-	/// <remarks>Does not scan resources or alter the scene tree. Call explicitly before AddChild for pre-tree injection.</remarks>
+	/// <remarks>Does not scan resources or alter the scene tree. Skips descendant scopes. Call explicitly before AddChild for pre-tree injection.</remarks>
 	/// <exception cref="ArgumentNullException">The root is null.</exception>
 	/// <exception cref="ObjectDisposedException">A node has been freed.</exception>
 	/// <exception cref="InjectionException">Injection fails on a node. Earlier injections are not rolled back.</exception>
@@ -76,7 +76,8 @@ public sealed class MethodInjector
 		ArgumentNullException.ThrowIfNull(root);
 		Inject(root);
 		foreach (var child in root.GetChildren())
-			InjectTree(child);
+			if (child is not InjectraScope)
+				InjectTree(child);
 	}
 
 	private static InjectionMethod[] Prepare(Type type)
