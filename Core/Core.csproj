@@ -6,15 +6,15 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup Condition="'$(InjectraSourcePath)' == ''">
-		<PackageReference Include="Injectra" Version="0.6.0-alpha.1"/>
+		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>
 	</ItemGroup>
 	<ItemGroup Condition="'$(InjectraSourcePath)' != ''">
 		<ProjectReference Include="$(InjectraSourcePath)/Core/Core.csproj"/>
 		<ProjectReference Include="$(InjectraSourcePath)/Lifecycle/Lifecycle.csproj"/>
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="addon\icons\icon.png" />
-	  <Content Include="addon\icons\icon.png.import" />
-	  <Content Include="addon\README.md" />
+	  <Content Include="addons\Injectra.Godot\icons\icon.png" />
+	  <Content Include="addons\Injectra.Godot\icons\icon.png.import" />
+	  <Content Include="addons\Injectra.Godot\README.md" />
 	</ItemGroup>
 </Project>

@@ -13,15 +13,20 @@ config_version=5
 config/name="Injectra.Godot"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
-config/icon="res://addon/icons/icon.png"
+config/icon="res://addons/Injectra.Godot/icons/icon.png"
 
 [autoload]
 
 ProjectScope="*res://Demo/ProjectScope.tscn"
+InjectraDiagnostics="*res://addons/Injectra.Godot/Diagnostics/DiagnosticsBridge.cs"
 
 [dotnet]
 
 project/assembly_name="Injectra.Godot"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/Injectra.Godot/plugin.cfg")
 
 [rendering]
 

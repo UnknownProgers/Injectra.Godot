@@ -76,13 +76,10 @@ jobs:
           destination = Path("addons/Injectra.Godot")
           version = os.environ["PACKAGE_VERSION"]
           with ZipFile(output / f"Injectra.Godot-{version}.zip", "w", ZIP_DEFLATED) as archive:
-              for source in sorted(Path("Core/addon").rglob("*")):
-                  if not source.is_file() or source.suffix not in {".cs", ".uid", ".png", ".svg", ".md"}:
+              for source in sorted(Path("Core/addons/Injectra.Godot").rglob("*")):
+                  if not source.is_file() or source.suffix not in {".cs", ".uid", ".png", ".svg", ".md", ".cfg", ".tscn"}:
                       continue
-                  content = source.read_bytes()
-                  if source.suffix == ".cs":
-                      content = content.replace(b"res://addon/", b"res://addons/Injectra.Godot/")
-                  archive.writestr(str(destination / source.relative_to("Core/addon")), content)
+                  archive.write(source, str(destination / source.relative_to("Core/addons/Injectra.Godot")))
               archive.write("LICENSE", str(destination / "LICENSE"))
           PY
 

@@ -10,7 +10,7 @@ metadata={
 
 [deps]
 
-source_file="res://addon/icons/icon.png"
+source_file="res://addons/Injectra.Godot/icons/icon.png"
 dest_files=["res://.godot/imported/icon.png-aabbbd23d9121486fb028add8e17a1da.ctex"]
 
 [params]

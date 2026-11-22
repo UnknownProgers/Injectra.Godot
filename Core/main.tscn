@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3]
 
-[ext_resource type="Script" path="res://addon/InjectraScope.cs" id="1_scope"]
+[ext_resource type="Script" path="res://addons/Injectra.Godot/InjectraScope.cs" id="1_scope"]
 [ext_resource type="Script" path="res://Demo/DemoInstaller.cs" id="2_installer"]
 [ext_resource type="Script" path="res://Demo/DemoController.cs" id="3_controller"]
 [ext_resource type="PackedScene" path="res://Demo/DemoChildScope.tscn" id="5_child"]

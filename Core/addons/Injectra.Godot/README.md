@@ -8,11 +8,11 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 2. Add the underlying container package to the game and build:
 
    ```sh
-   dotnet add MyGame.csproj package Injectra --version 0.6.0-alpha.1
+   dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
    dotnet build MyGame.csproj
    ```
 
-No editor plugin activation is required. These sources compile with the game.
+The runtime DI features do not require editor plugin activation. These sources compile with the game.
 
 ## Usage
 
@@ -44,3 +44,27 @@ var player = scenes.Instantiate<Player>(parent);
 Children inherit mappings and may override individual types with a local registry. Keys are exact C# types.
 Mappings are fixed when the scope is prepared. Duplicate keys and incomplete entries are rejected.
 Use `Instantiate<Player>(packedScene, parent)` when choosing between scenes sharing the same script.
+
+## Editor diagnostics
+
+1. Build the C# project, then enable **Injectra Diagnostics** in **Project → Project Settings → Plugins**.
+2. Run the game from the editor.
+3. Open the bottom **Debugger** panel and select its **Injectra** tab.
+4. Press **Refresh** to capture the running game's container hierarchy. Select a row to inspect its details.
+5. Use **Copy text** to copy the Core diagnostic tree to the clipboard.
+
+The view is read-only. It shows container children, registration aliases, created/pending state, lifetimes,
+ownership, overrides, and constructor dependency sources. Created entries come first within each container.
+Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no attached scope path.
+Container IDs are local to the snapshot.
+Factory dependencies are unknown, and transient instances are not tracked.
+
+The plugin automatically installs an `InjectraDiagnostics` Autoload for editor/runtime communication.
+It registers a message receiver only when Godot's debugger is connected. Disabling the plugin removes the Autoload.
+Snapshots are requested manually, with no per-frame scanning. No services are resolved and no factories are invoked by inspection.
+When the game stops, the panel clears its snapshot and disables runtime actions. A paused game must resume to answer a refresh request.
+Each editor debugging session has its own tab contents. This inspects live scopes; it does not predict containers from edited scenes.
+
+Development and release builds use the same addon directory: `addons/Injectra.Godot`.
+The repository contains one plugin configuration at `Core/addons/Injectra.Godot/plugin.cfg`.
+The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.

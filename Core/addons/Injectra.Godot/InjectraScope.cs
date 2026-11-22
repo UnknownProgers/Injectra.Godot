@@ -12,12 +12,15 @@ namespace Injectra.Godot;
 /// Factory-created scopes use the factory's container as their explicit parent. A root scope drives one lifecycle for the hierarchy.
 /// </remarks>
 [GlobalClass]
-[Icon("res://addon/icons/scope.svg")]
+[Icon("res://addons/Injectra.Godot/icons/scope.svg")]
 public partial class InjectraScope : Node
 {
 	private Container? _container;
 	private bool _closed;
 	private InjectraLifecycle? _lifecycle;
+	internal Container? PreparedContainer => _container;
+	internal InjectraScope? DiagnosticsRootScope { get; private set; }
+	internal Container? DiagnosticsRoot => _lifecycle is null ? null : _container;
 
 	/// <summary>Installers executed in array order before the container is built.</summary>
 	[Export]
@@ -100,9 +103,14 @@ public partial class InjectraScope : Node
 			}
 
 			if (parentContainer is not null)
+			{
+				// Scope instances are already registered; retain the actual DI root, not the node placement root.
+				DiagnosticsRootScope = parentContainer.ResolveAll<InjectraScope>().SingleOrDefault()?.DiagnosticsRootScope;
 				_container = parentContainer.CreateChild(builder => Install(builder, parentContainer), InjectNodes);
+			}
 			else
 			{
+				DiagnosticsRootScope = this;
 				var builder = new ContainerBuilder();
 				Install(builder, null);
 				builder.UseLifecycle(ConfigureLifecycle);
@@ -173,6 +181,7 @@ public partial class InjectraScope : Node
 	{
 		_closed = true;
 		_lifecycle = null;
+		DiagnosticsRootScope = null;
 		if (this is InjectraProjectScope project)
 			project.Deactivate();
 

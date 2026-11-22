@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Core/addon/icons/icon.png" alt="Injectra.Godot Logo" width="120"/>
+  <img src="Core/addons/Injectra.Godot/icons/icon.png" alt="Injectra.Godot Logo" width="120"/>
 </p>
 
 <h1 align="center">Injectra.Godot</h1>
@@ -52,11 +52,11 @@ Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
 4. Add the underlying Injectra package to **your game's** project:
 
    ```sh
-   dotnet add MyGame.csproj package Injectra --version 0.6.0-alpha.1
+   dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
    dotnet build MyGame.csproj
    ```
 
-The addon compiles with the game. No DLL copying, editor plugin activation, or manual `MethodInjector` construction is required.
+The addon compiles with the game. No DLL copying or manual `MethodInjector` construction is required. Runtime DI does not require editor plugin activation.
 Multitargeting and platform exports outside the tested Linux setup have not been validated yet.
 
 ## Quick start
@@ -340,11 +340,35 @@ Closing a level preserves project services. Closing the project container also d
 A scope that left the tree is permanently closed: create a new instance instead of re-entering it.
 Do not transfer nodes or resources to container ownership simply to match scope lifetime; native Godot ownership still applies.
 
+## Editor diagnostics
+
+1. Build the C# project, then enable **Injectra Diagnostics** in **Project → Project Settings → Plugins**.
+2. Run the game from the editor.
+3. Open the bottom **Debugger** panel and select its **Injectra** tab.
+4. Press **Refresh** to capture the running game's container hierarchy. Select a row to inspect its details.
+5. Use **Copy text** to copy the Core diagnostic tree to the clipboard.
+
+The view is read-only. It shows container children, registration aliases, created/pending state, lifetimes,
+ownership, overrides, and constructor dependency sources. Created entries come first within each container.
+Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no attached scope path.
+Container IDs are local to the snapshot.
+Factory dependencies are unknown, and transient instances are not tracked.
+
+The plugin automatically installs an `InjectraDiagnostics` Autoload for editor/runtime communication.
+It registers a message receiver only when Godot's debugger is connected. Disabling the plugin removes the Autoload.
+Snapshots are requested manually, with no per-frame scanning. No services are resolved and no factories are invoked by inspection.
+When the game stops, the panel clears its snapshot and disables runtime actions. A paused game must resume to answer a refresh request.
+Each editor debugging session has its own tab contents. This inspects live scopes; it does not predict containers from edited scenes.
+
+Development and release builds use the same addon directory: `addons/Injectra.Godot`.
+The repository contains one plugin configuration at `Core/addons/Injectra.Godot/plugin.cfg`.
+The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
+
 ## Current boundaries
 
 - Main-thread use only.
 - Cached metadata, but reflection-based method calls. Generated method injection is not implemented yet.
-- No separate addon NuGet package or editor `plugin.cfg` required.
+- No separate addon NuGet package. The editor plugin is optional and used only for diagnostics.
 
 ## Demo and development
 

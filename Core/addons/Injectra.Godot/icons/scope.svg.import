@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://r3junvw8keg4"
-path="res://.godot/imported/scope.svg-abfca77c2523140f6e3236b58c744be8.ctex"
+path="res://.godot/imported/scope.svg-4ead974f1d1b47dc29a78bd5b53968b6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addon/icons/scope.svg"
-dest_files=["res://.godot/imported/scope.svg-abfca77c2523140f6e3236b58c744be8.ctex"]
+source_file="res://addons/Injectra.Godot/icons/scope.svg"
+dest_files=["res://.godot/imported/scope.svg-4ead974f1d1b47dc29a78bd5b53968b6.ctex"]
 
 [params]
 
