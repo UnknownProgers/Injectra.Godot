@@ -16,7 +16,8 @@ public partial class LifecycleTests : Node
 			DetachedHierarchyIsConstructedBeforeCallbacks();
 			PackedSceneCanBePreparedBeforeAddChild();
 			ReadyDoesNotRepeatWithoutRequestReady();
-			GD.Print("PASS: 3 Godot lifecycle tests, .NET 11, Injectra package.");
+			InjectionTests.Run(this);
+			GD.Print("PASS: 3 Godot lifecycle tests, .NET 11, Injectra integration.");
 			GetTree().Quit();
 		}
 		catch (Exception error)
