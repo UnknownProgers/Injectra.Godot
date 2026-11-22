@@ -7,6 +7,6 @@ public partial class DemoInstaller : ResourceInstaller
 {
 	public override void Install(ContainerBuilder builder)
 	{
-		builder.Register<DemoSession>(Lifetime.Singleton);
+		builder.Register<DemoSession>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 	}
 }

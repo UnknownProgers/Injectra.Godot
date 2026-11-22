@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://dmfwv3fpujb5p" path="res://Demo/DemoActor.cs" id="1"]
 
-[node name="Actor" type="PanelContainer" unique_id=1022714314]
+[node name="Actor" type="Node" unique_id=1022714314]
 script = ExtResource("1")

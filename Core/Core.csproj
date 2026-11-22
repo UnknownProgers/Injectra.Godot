@@ -6,10 +6,11 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup Condition="'$(InjectraSourcePath)' == ''">
-		<PackageReference Include="Injectra" Version="0.5.1-alpha.2"/>
+		<PackageReference Include="Injectra" Version="0.6.0-alpha.1"/>
 	</ItemGroup>
 	<ItemGroup Condition="'$(InjectraSourcePath)' != ''">
 		<ProjectReference Include="$(InjectraSourcePath)/Core/Core.csproj"/>
+		<ProjectReference Include="$(InjectraSourcePath)/Lifecycle/Lifecycle.csproj"/>
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="addon\icons\icon.png" />

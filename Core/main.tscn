@@ -1,9 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://addon/InjectraScope.cs" id="1_scope"]
 [ext_resource type="Script" path="res://Demo/DemoInstaller.cs" id="2_installer"]
 [ext_resource type="Script" path="res://Demo/DemoController.cs" id="3_controller"]
 [ext_resource type="PackedScene" path="res://Demo/DemoActor.tscn" id="4_actor"]
+[ext_resource type="PackedScene" path="res://Demo/DemoChildScope.tscn" id="5_child"]
+[ext_resource type="PackedScene" path="res://Demo/DemoInheritedChildScope.tscn" id="6_inherited"]
 
 [sub_resource type="Resource" id="Resource_installer"]
 script = ExtResource("2_installer")
@@ -14,10 +16,17 @@ Installers = Array[ExtResource("2_installer")]([SubResource("Resource_installer"
 Injection = 1
 
 [node name="DemoController" type="VBoxContainer" parent="."]
-offset_left = 32.0
-offset_top = 32.0
-offset_right = 800.0
-offset_bottom = 400.0
-theme_override_constants/separation = 16
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
 script = ExtResource("3_controller")
 ActorScene = ExtResource("4_actor")
+ChildScopeScene = ExtResource("5_child")
+InheritedChildScopeScene = ExtResource("6_inherited")

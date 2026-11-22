@@ -7,7 +7,7 @@ public partial class LifecycleTests : Node
 {
 	public override void _Ready() => Callable.From(Run).CallDeferred();
 
-	private void Run()
+	private async void Run()
 	{
 		try
 		{
@@ -19,6 +19,7 @@ public partial class LifecycleTests : Node
 			InjectionTests.Run(this);
 			ScopeTests.Run(this);
 			ProjectScopeTests.Run(this);
+			await GodotLifecycleTests.Run(this);
 			GD.Print("PASS: 3 Godot lifecycle tests, .NET 11, Injectra integration.");
 			GetTree().Quit();
 		}

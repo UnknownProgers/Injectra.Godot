@@ -28,6 +28,7 @@ Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
 - An automatically registered `SceneFactory` for each scope.
 - Root-only injection by default; explicit subtree injection when needed.
 - Container ownership and disposal supplied by Injectra.
+- One lifecycle manager per root, with initialization, frame updates, and fixed physics updates for its child scopes.
 
 ## Installation
 
@@ -51,7 +52,7 @@ Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
 4. Add the underlying Injectra package to **your game's** project:
 
    ```sh
-   dotnet add MyGame.csproj package Injectra --version 0.5.1-alpha.2
+   dotnet add MyGame.csproj package Injectra --version 0.6.0-alpha.1
    dotnet build MyGame.csproj
    ```
 
@@ -198,7 +199,8 @@ Scope._EnterTree()
     → Configure(builder)
     → register current scope and local SceneFactory
     → Build() or parent.CreateChild(...)
-    → inject selected nodes; prepare nested scopes in Tree mode
+    → preparation callback: inject nodes and prepare nested scopes in Tree mode
+    → attach prepared lifecycle participants and initialize them
     → descendant _EnterTree() callbacks
     → descendant _Ready() callbacks
     → scope _Ready()
@@ -213,6 +215,7 @@ Override scope callbacks with `base._EnterTree()` first, and call `base._ExitTre
 PackedScene.Instantiate()
     → inject root or selected subtree
       (scope roots first build their own container)
+    → attach scope lifecycle participants and initialize them
     → AddChild(parent), if supplied
     → _EnterTree() callbacks, parent before children
     → _Ready() callbacks, children before parent
@@ -220,6 +223,9 @@ PackedScene.Instantiate()
 
 Factory-selected nodes receive dependencies **before `_EnterTree()`**, not just before `_Ready()`.
 Prepared scopes do not build or inject again when their `_EnterTree()` follows.
+
+Creation during a lifecycle callback defers the new scope's attachment and initialization until that traversal ends.
+Injection still finishes immediately; `Initialize()` always precedes the participant's first tick.
 
 `Build()` validates registrations and prepares constructor graphs. Services are created on resolution unless marked `.NonLazy()`.
 Installers configure registrations: do not spawn scenes, build the builder, or start game logic inside them.
@@ -238,6 +244,49 @@ Injection is not a `_Ready()` callback. Child tree callbacks may not have run ye
 
 Resources are not scanned recursively, and `RegisterInstance` does not automatically invoke injection methods.
 The internal injector supports resources, but the public scope API does not expose automatic resource-injection registration yet.
+
+## Godot lifecycle
+
+A root scope automatically enables one `InjectraLifecycle` and initializes it after container preparation.
+The Autoload project scope is normally this root. A scene launched without a project scope drives its own manager.
+Child scopes inherit the manager and do not dispatch it again.
+
+Register lifecycle contracts explicitly:
+
+```csharp
+using Injectra;
+using Injectra.Godot;
+using Injectra.Lifecycle;
+
+public sealed class Simulation : IInitializable, IFrameTickable, IPhysicsTickable
+{
+	public void Initialize() { }
+	public void FrameTick(double deltaTime) { }
+	public void PhysicsTick(double deltaTime) { }
+}
+
+// In an installer:
+// builder.Register<Simulation>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+```
+
+| Contract | Source |
+|---|---|
+| `Injectra.Lifecycle.IInitializable` | After branch preparation, once |
+| `Injectra.Lifecycle.IFrameTickable` | Root scope `_Process(delta)` |
+| `Injectra.Godot.IPhysicsTickable` | Root scope `_PhysicsProcess(delta)` |
+
+Implementing an interface is not enough: expose it through `.As<T>()` or `.AsImplementedInterfaces()`.
+Participants must be singleton or instance registrations; transient lifecycle registrations are rejected.
+Registered nodes must also be selected for method injection when they depend on `[Inject]` methods.
+
+`Initialize()` does not promise a ready SceneTree. It can run while a scene is detached; inside a tick, it waits until the current
+lifecycle traversal completes. Keep tree-dependent startup in Godot callbacks.
+Closing a child scope stops its participants and disposes its owned services. A child created inside a tick starts participating in the next phase call.
+Do not synchronously free a root scope inside its own lifecycle callback; use Godot's `QueueFree()` to close it after the callback returns.
+
+The root's Godot processing and pause mode control dispatch. Per-participant Godot node processing flags do not filter lifecycle phases.
+Override `ConfigureLifecycle` on a root scope to add custom phases, calling the base method to preserve physics dispatch.
+Do not call `UseLifecycle()` again in installers: the addon registers it once on the root.
 
 ## Installers from code
 
@@ -281,13 +330,19 @@ Do not transfer nodes or resources to container ownership simply to match scope 
 
 - Main-thread use only.
 - Cached metadata, but reflection-based method calls. Generated method injection is not implemented yet.
-- No automatic Godot frame, physics, or `IInitializable` dispatch yet.
 - No separate addon NuGet package or editor `plugin.cfg` required.
 
 ## Demo and development
 
 Open `Core/project.godot` and run `main.tscn`. The Autoload supplies `DemoProjectSession`; the scene scope supplies `DemoSession`
 and `SceneFactory`. Actors display the shared project session ID and receive both sessions before `_EnterTree()`.
+
+The dependency tree starts with two child examples. The same `DemoInstaller` registers a new local `DemoSession`;
+the different `DemoChildInstaller` adds only `DemoChildState`, so that child inherits its parent's `DemoSession`.
+Matching IDs identify shared instances; each scope has its own factory.
+Select a scene or child branch, choose the installer mode, and create an actor or another child under that selection.
+Creation from `FrameTick` captures the selected parent when queued. Closing a branch removes its descendants and disposes owned services,
+while inherited sessions and unrelated branches continue ticking.
 
 Build and run tests with the Godot .NET executable on your PATH:
 

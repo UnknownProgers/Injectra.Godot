@@ -2,10 +2,13 @@ using Godot;
 
 namespace Injectra.Godot.Demo;
 
-public partial class DemoActor : PanelContainer
+public partial class DemoActor : Node
 {
 	private DemoSession _session = null!;
 	private DemoProjectSession _project = null!;
+	public DemoSession Session => _session;
+	public DemoProjectSession Project => _project;
+	public int Number { get; private set; }
 
 	[Inject]
 	public void Construct(DemoSession session, DemoProjectSession project)
@@ -17,10 +20,6 @@ public partial class DemoActor : PanelContainer
 	public override void _EnterTree()
 	{
 		base._EnterTree();
-		AddChild(new Label
-		{
-			Text = $"Actor {_session.NextActor()}: injected before _EnterTree; shared DemoSession.\n"
-				+ $"Project lifetime session: {_project.Id}"
-		});
+		Number = _session.NextActor();
 	}
 }

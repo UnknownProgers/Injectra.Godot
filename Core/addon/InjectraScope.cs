@@ -1,5 +1,6 @@
 using Godot;
 using Godot.Collections;
+using Injectra.Lifecycle;
 
 namespace Injectra.Godot;
 
@@ -8,7 +9,7 @@ namespace Injectra.Godot;
 /// Preparation runs in this node's EnterTree callback, before descendant EnterTree and Ready callbacks.
 /// Leaving the tree permanently closes the scope. A closed scope cannot be reused.
 /// Inherits the nearest ancestor scope, then the active project scope, or builds an independent root.
-/// Factory-created scopes use the factory's container as their explicit parent. Automatic lifecycle dispatch is not supported yet.
+/// Factory-created scopes use the factory's container as their explicit parent. A root scope drives one lifecycle for the hierarchy.
 /// </remarks>
 [GlobalClass]
 [Icon("res://addon/icons/scope.svg")]
@@ -16,6 +17,7 @@ public partial class InjectraScope : Node
 {
 	private Container? _container;
 	private bool _closed;
+	private InjectraLifecycle? _lifecycle;
 
 	/// <summary>Installers executed in array order before the container is built.</summary>
 	[Export]
@@ -38,6 +40,14 @@ public partial class InjectraScope : Node
 	/// <remarks>Installer and service creation exceptions propagate. Overrides must call the base method first.</remarks>
 	public override void _EnterTree() => Prepare();
 
+	/// <summary>Dispatches frame participants through the root scope's lifecycle.</summary>
+	/// <remarks>Child scopes do not dispatch again. Participant exceptions propagate. Overrides must call the base method.</remarks>
+	public override void _Process(double delta) => _lifecycle?.Tick(delta);
+
+	/// <summary>Dispatches physics participants through the root scope's lifecycle.</summary>
+	/// <remarks>Participant exceptions propagate. Overrides must call the base method.</remarks>
+	public override void _PhysicsProcess(double delta) => _lifecycle?.Dispatch<IPhysicsTickable, double>(delta);
+
 	/// <summary>Closes the container after descendants leave the tree.</summary>
 	/// <remarks>Exceptions from service disposal propagate. Overrides must call the base method.</remarks>
 	public override void _ExitTree() => Close();
@@ -52,6 +62,11 @@ public partial class InjectraScope : Node
 	/// <summary>Adds code-based registrations after resource installers and before container construction.</summary>
 	/// <remarks>Override to invoke plain IInstaller implementations or register services directly.</remarks>
 	protected virtual void Configure(ContainerBuilder builder) { }
+
+	/// <summary>Configures lifecycle phases once on a root scope. Override to register additional phases.</summary>
+	/// <remarks>Call the base method to retain the Godot physics phase. Do not initialize or dispose the manager here.</remarks>
+	protected virtual void ConfigureLifecycle(InjectraLifecycle lifecycle) =>
+		lifecycle.RegisterPhase<IPhysicsTickable, double>(static (service, delta) => service.PhysicsTick(delta));
 
 	internal void Prepare(Node? parent = null, Container? parentContainer = null)
 	{
@@ -81,19 +96,16 @@ public partial class InjectraScope : Node
 			}
 
 			if (parentContainer is not null)
-				_container = parentContainer.CreateChild(Install);
+				_container = parentContainer.CreateChild(Install, InjectNodes);
 			else
 			{
 				var builder = new ContainerBuilder();
 				Install(builder);
-				_container = builder.Build();
+				builder.UseLifecycle(ConfigureLifecycle);
+				_container = builder.Build(InjectNodes);
+				_lifecycle = _container.Resolve<InjectraLifecycle>();
+				_lifecycle.Initialize();
 			}
-
-			var injector = new MethodInjector(_container);
-			if (Injection == SceneInjection.Tree)
-				injector.InjectTree(this);
-			else
-				injector.Inject(this);
 		}
 		catch (Exception setupError)
 		{
@@ -104,6 +116,16 @@ public partial class InjectraScope : Node
 			}
 			throw;
 		}
+	}
+
+	private void InjectNodes(Container container)
+	{
+		_container = container;
+		var injector = new MethodInjector(container);
+		if (Injection == SceneInjection.Tree)
+			injector.InjectTree(this);
+		else
+			injector.Inject(this);
 	}
 
 	private Container? FindParentContainer(Node? parent)
@@ -138,6 +160,7 @@ public partial class InjectraScope : Node
 	private void Close()
 	{
 		_closed = true;
+		_lifecycle = null;
 		if (this is InjectraProjectScope project)
 			project.Deactivate();
 
