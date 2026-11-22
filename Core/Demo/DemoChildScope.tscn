@@ -5,6 +5,8 @@
 
 [sub_resource type="Resource" id="Resource_installer"]
 script = ExtResource("2_installer")
+SessionLabel = "Child session"
+StartingHealth = 45
 
 [node name="ChildScope" type="Node"]
 script = ExtResource("1_scope")

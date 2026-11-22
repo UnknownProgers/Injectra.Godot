@@ -5,6 +5,13 @@ namespace Injectra.Godot.Demo;
 
 public sealed class DemoSession : IDisposable, IInitializable, IFrameTickable, IPhysicsTickable
 {
+	public DemoSettings Settings { get; }
+
+	public DemoSession(DemoSettings settings)
+	{
+		Settings = settings;
+	}
+
 	public string Id { get; } = Guid.NewGuid().ToString("N")[..8];
 	public bool IsDisposed { get; private set; }
 	public Action? OnNextFrame { get; set; }

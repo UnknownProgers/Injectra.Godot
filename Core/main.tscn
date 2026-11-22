@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://addon/InjectraScope.cs" id="1_scope"]
 [ext_resource type="Script" path="res://Demo/DemoInstaller.cs" id="2_installer"]
@@ -6,16 +6,19 @@
 [ext_resource type="PackedScene" path="res://Demo/DemoActor.tscn" id="4_actor"]
 [ext_resource type="PackedScene" path="res://Demo/DemoChildScope.tscn" id="5_child"]
 [ext_resource type="PackedScene" path="res://Demo/DemoInheritedChildScope.tscn" id="6_inherited"]
+[ext_resource type="Script" path="res://Demo/DemoDependencyTree.cs" id="7_tree"]
 
 [sub_resource type="Resource" id="Resource_installer"]
 script = ExtResource("2_installer")
+SessionLabel = "Game session"
+StartingHealth = 120
 
 [node name="GameScope" type="Node"]
 script = ExtResource("1_scope")
 Installers = Array[ExtResource("2_installer")]([SubResource("Resource_installer")])
 Injection = 1
 
-[node name="DemoController" type="VBoxContainer" parent="."]
+[node name="DemoController" type="VBoxContainer" parent="." node_paths=PackedStringArray("DependencyTree", "StatusLabel", "InstallerMode", "CloseButton")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -30,3 +33,71 @@ script = ExtResource("3_controller")
 ActorScene = ExtResource("4_actor")
 ChildScopeScene = ExtResource("5_child")
 InheritedChildScopeScene = ExtResource("6_inherited")
+DependencyTree = NodePath("DependencyTree")
+StatusLabel = NodePath("Status")
+InstallerMode = NodePath("Toolbar/ChildInstaller")
+CloseButton = NodePath("Toolbar/CloseChildScope")
+ProjectColor = Color(0.33333334, 0.85882354, 0.9098039, 1)
+SceneColor = Color(0.7019608, 0.5411765, 1, 1)
+
+[node name="Title" type="Label" parent="DemoController"]
+layout_mode = 2
+text = "Injectra.Godot — dependency hierarchy"
+
+[node name="Explanation" type="Label" parent="DemoController"]
+layout_mode = 2
+text = "Same installer: DemoInstaller registers DemoSession again → NEW local session.
+Different installer: DemoChildInstaller adds DemoChildState only → SAME parent session."
+autowrap_mode = 3
+
+[node name="Toolbar" type="HBoxContainer" parent="DemoController"]
+layout_mode = 2
+
+[node name="ChildInstaller" type="OptionButton" parent="DemoController/Toolbar"]
+layout_mode = 2
+item_count = 2
+selected = 0
+popup/item_0/text = "Same installer · new session"
+popup/item_0/id = 0
+popup/item_1/text = "Different installer · inherit session"
+popup/item_1/id = 1
+
+[node name="CreateActor" type="Button" parent="DemoController/Toolbar"]
+layout_mode = 2
+text = "Create actor"
+
+[node name="CreateChildScope" type="Button" parent="DemoController/Toolbar"]
+layout_mode = 2
+text = "Create child"
+
+[node name="CreateScopeInTick" type="Button" parent="DemoController/Toolbar"]
+layout_mode = 2
+text = "Create child during Tick"
+
+[node name="CloseChildScope" type="Button" parent="DemoController/Toolbar"]
+layout_mode = 2
+disabled = true
+text = "Close selected child"
+
+[node name="Status" type="Label" parent="DemoController"]
+layout_mode = 2
+text = "Select GameScope or a child: both creation buttons use that scope's factory. Matching IDs identify shared instances."
+autowrap_mode = 3
+
+[node name="DependencyTree" type="Tree" parent="DemoController"]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/v_separation = 2
+theme_override_font_sizes/font_size = 14
+columns = 4
+column_titles_visible = true
+script = ExtResource("7_tree")
+ColumnTitles = PackedStringArray("Scope / object / dependency", "Instance ID", "Owner / source", "Lifecycle")
+MinimumColumnWidths = PackedInt32Array(230, 190, 190, 190)
+
+[connection signal="pressed" from="DemoController/Toolbar/CreateActor" to="DemoController" method="SpawnSelected"]
+[connection signal="pressed" from="DemoController/Toolbar/CreateChildScope" to="DemoController" method="CreateSelectedChild"]
+[connection signal="pressed" from="DemoController/Toolbar/CreateScopeInTick" to="DemoController" method="QueueChild"]
+[connection signal="pressed" from="DemoController/Toolbar/CloseChildScope" to="DemoController" method="CloseSelected"]
+[connection signal="item_selected" from="DemoController/DependencyTree" to="DemoController" method="UpdateSelection"]
