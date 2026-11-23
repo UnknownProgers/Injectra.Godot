@@ -3,6 +3,9 @@ namespace Injectra.Godot.Benchmarks;
 public partial class BenchmarkScope : InjectraScope
 {
 	protected override void Configure(ContainerBuilder builder)
+		=> RegisterServices(builder);
+
+	internal static void RegisterServices(ContainerBuilder builder)
 	{
 		builder.Register<BenchmarkDependency>(Lifetime.Singleton);
 		builder.Register<BenchmarkServiceB>(Lifetime.Singleton);

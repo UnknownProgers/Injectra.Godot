@@ -173,7 +173,8 @@ public sealed partial class MethodInjectionGeneratorTests
 			public sealed class InjectAttribute : System.Attribute;
 			public partial class Target : Godot.Node { [Inject] public void Construct() { } }
 			""");
-		Assert.Empty(result.Generated);
+		Assert.Single(result.Generated);
+		Assert.DoesNotContain(".@Construct(", result.Source);
 	}
 
 	private static (CSharpCompilation Compilation, string Source, SyntaxTree[] Generated) Generate(params string[] sources)

@@ -8,7 +8,7 @@ Each declaring class may have at most one injection method, otherwise compiler e
 Overrides inherit `[Inject]`. Repeating the attribute does not change behavior: the virtual slot runs once.
 An override plus another local injection method is a duplicate whether or not the override repeats the attribute.
 Plans preserve base-to-derived slot order; hidden methods have separate calls through their declaring types.
-The addon automatically selects the generated path. Nested/generic target classes and custom external bases retain reflection fallback.
+The addon automatically selects the generated path. Eligible types without injection methods receive an empty plan, avoiding reflection discovery. Every plan accepts only its exact runtime type. Nested/generic target classes and custom external bases retain reflection fallback.
 Generated calls use the current resolver and preserve injection error causes.
 
 The generator is built separately from the game; only its generated C# code becomes part of the game assembly.

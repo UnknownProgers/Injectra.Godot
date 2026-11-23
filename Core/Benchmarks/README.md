@@ -148,3 +148,80 @@ Build and measurement commands remain as documented above.
 These replace the local-source numbers above as the baseline for the published
 Core dependency. The difference alone does not isolate the cause: dependency
 build configuration and binary version are not controlled independently here.
+
+## Scope preparation breakdown — 2026-11-23
+
+Run the diagnostic group separately:
+
+```sh
+DOTNET_TieredCompilation=0 godot --headless --path Core res://Benchmarks/ContainerBenchmarks.tscn -- preparation
+```
+
+Same NuGet dependency and settings. Two consecutive runs confirmed the following
+(second run shown). These are independent controls, not additive timed stages.
+
+| Control | Median ns/op | Managed B/op |
+|---|---:|---:|
+| Node construction only | 303.54 | 104 |
+| BenchmarkScope construction only | 853.80 | 272 |
+| Core build, 4 registrations | 980.56 | 2,648 |
+| Core build + lifecycle + initialize | 1,680.75 | 4,272 |
+| Fresh injector, empty scope injection | 34,823.02 | 12,136 |
+| Reused injector, empty scope injection | 15.56 | 0 |
+| Full scope, injection discovery bypassed | 3,300.95 | 5,738.53 |
+| Full scope, current implementation | 37,826.86 | 17,680 |
+
+The bypass control explicitly implements the internal generated injection
+contract on a benchmark-only subclass with no injection methods. It keeps scope
+creation, service registrations, lifecycle and cleanup, skipping only injection
+discovery. It is not a production optimization and does not test general
+inheritance correctness. Root lifecycle controls do not include addon scope and
+factory registrations, so their allocation totals must not be added together.
+
+The first run measured 35,501 ns for fresh empty injection, 3,683 ns for bypass
+and 39,353 ns for full scope. Full/bypass samples contain occasional long pauses
+(up to approximately 63 microseconds) and the bypass allocation average is
+fractional; do not treat their difference as an exact allocation profile.
+The isolated reflection result is stable at 12,136 bytes per operation.
+
+Cause: the generator emits no plan for types without injection methods. Scope
+preparation creates a fresh MethodInjector, whose cache is instance-local.
+Therefore each scope repeats GetMethods/attribute inspection over its complete
+hierarchy, including Godot Node and GodotObject, only to discover an empty plan.
+GetMethods arrays and reflection/LINQ bookkeeping allocate even when no methods
+are selected. About 69% of the full scope's managed allocation and about 92% of
+its time correspond to the isolated empty-injection control in this run.
+The benchmark does not assign individual allocation stacks to those 12,136 bytes.
+
+A narrow next optimization is to generate an empty plan for eligible Node types
+with no injection methods, retaining exact runtime-type guards and fallback for
+unsupported targets. Reflection plan caching across injectors and avoiding scans
+of known framework bases are separate alternatives; neither is implemented here.
+
+## Empty generated plans — 2026-11-23
+
+The generator now emits an empty plan for eligible Node types without injection
+methods. The existing exact-runtime-type guard remains: unsupported derived types
+still reject an inherited plan and enter reflection fallback. No runtime injector
+or container changes are required.
+
+After the change, with the same NuGet dependency and measurement settings:
+
+| Control | Before ns/op | After ns/op | Before managed B/op | After managed B/op |
+|---|---:|---:|---:|---:|
+| Fresh injector, empty scope injection | 34,823.02 | 32.66 | 12,136 | 112 |
+| Reused injector, empty scope injection | 15.56 | 9.57 | 0 | 0 |
+| Full scope | 37,826.86 | 2,351.99 | 17,680 | 5,656 |
+
+A separate `-- build` run measured 3,032.58 ns (2,999.50–3,249.07 ns sample
+range), also 5,656 managed bytes. Report roughly 2.35–3.03 microseconds rather
+than treating the faster median as a fixed cost. This is about 12–16 times faster
+than the prior full-scope baseline, with about 68% less managed allocation.
+
+The manual no-injection control is now nested to remain outside automatic
+generation. Its extra inheritance level and Godot wrapper bookkeeping make it
+an approximate control, not an exact lower bound. The original before/after
+BenchmarkScope measurements are the primary comparison.
+
+Validation: 58 generator tests and the native Godot integration suite passed,
+including inheritance, scene creation, lifecycle and diagnostics.

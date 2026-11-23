@@ -28,8 +28,8 @@ public partial class ContainerBenchmarks : Node
 	private static void Run()
 	{
 		var selected = OS.GetCmdlineUserArgs().FirstOrDefault() ?? "all";
-		if (selected is not ("all" or "singleton" or "transient" or "factory" or "build"))
-			throw new ArgumentException("Select all, singleton, transient, factory or build after --.");
+		if (selected is not ("all" or "singleton" or "transient" or "factory" or "build" or "preparation"))
+			throw new ArgumentException("Select all, singleton, transient, factory, build or preparation after --.");
 
 		var scope = new BenchmarkScope();
 		scope.Prepare();
@@ -56,6 +56,8 @@ public partial class ContainerBenchmarks : Node
 			GD.Print("7 samples; median; main thread. Scope includes node creation, addon registrations and lifecycle setup. Cleanup excluded.");
 			GD.Print("| Case | ns/op | Managed B/op | Min ns | Max ns |");
 			GD.Print("|---|---:|---:|---:|---:|");
+			if (selected == "preparation")
+				ScopePreparationMeasurements.Run(scope);
 			if (selected is "all" or "singleton")
 				Measure("Singleton resolve", () => container.Resolve(typeof(BenchmarkDependency)), 100_000);
 			if (selected is "all" or "transient")
@@ -76,7 +78,7 @@ public partial class ContainerBenchmarks : Node
 		finally { scope.Free(); }
 	}
 
-	private static void Measure<T>(string name, Func<T> operation, int iterations, Action<T>? cleanup = null) where T : class
+	internal static void Measure<T>(string name, Func<T> operation, int iterations, Action<T>? cleanup = null) where T : class
 	{
 		for (var i = 0; i < 2_000; i++)
 		{

@@ -103,8 +103,6 @@ public sealed class MethodInjectionGenerator : IIncrementalGenerator
 				methods.Add(method);
 			}
 		}
-		if (methods.Count == 0)
-			return null;
 		return (type.ToDisplayString() + ".Injectra.g.cs", InjectionSourceEmitter.Emit(type, methods), null);
 	}
 
