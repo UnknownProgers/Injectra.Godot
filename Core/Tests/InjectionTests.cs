@@ -39,7 +39,7 @@ internal static class InjectionTests
 		Throws<InjectionException>(() => injector.Inject(partiallyInvalid));
 		Check(partiallyInvalid.Calls == 0, "All method signatures must be validated before invoking the first method.");
 
-		foreach (var invalid in new object[] { new PrivateTarget(), new StaticTarget(), new ReturnTarget(), new GenericTarget(), new RefTarget(), new AsyncTarget() })
+		foreach (var invalid in new object[] { new PrivateTarget(), new StaticTarget(), new ReturnTarget(), new GenericTarget(), new RefTarget(), new AsyncTarget(), new VarargTarget() })
 		{
 			var error = Throws<InjectionException>(() => injector.Inject(invalid));
 			Check(error.Message.Contains(invalid.GetType().Name), "Invalid-method diagnostics must identify the declaring type.");
@@ -232,6 +232,7 @@ internal static class InjectionTests
 	private sealed class GenericTarget { [Inject] public void Construct<T>() { } }
 	private sealed class RefTarget { [Inject] public void Construct(ref int value) { } }
 	private sealed class AsyncTarget { [Inject] public async void Construct() => await Task.Yield(); }
+	private sealed class VarargTarget { [Inject] public void Construct(__arglist) { } }
 	private sealed class MissingTarget { [Inject] public void Construct(Unregistered dependency) { } }
 	private sealed class ThrowingTarget { [Inject] public void Construct() => throw new InvalidOperationException("User error"); }
 	private sealed class Unregistered;

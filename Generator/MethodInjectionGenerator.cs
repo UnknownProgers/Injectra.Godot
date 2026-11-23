@@ -16,6 +16,10 @@ public sealed class MethodInjectionGenerator : IIncrementalGenerator
 		"IGG001", "Multiple injection methods in one class",
 		"Type '{0}' declares more than one injection method; declare at most one per class",
 		"Usage", DiagnosticSeverity.Error, isEnabledByDefault: true);
+	private static readonly DiagnosticDescriptor InvalidMethod = new(
+		"IGG002", "Invalid injection method signature",
+		"Injection method '{0}' is invalid: {1}",
+		"Usage", DiagnosticSeverity.Error, isEnabledByDefault: true);
 
 	/// <inheritdoc />
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -59,6 +63,8 @@ public sealed class MethodInjectionGenerator : IIncrementalGenerator
 		var ownMethods = InjectionMethods(type, attribute);
 		if (ownMethods.Length > 1)
 			return ("", null, Diagnostic.Create(MultipleMethods, declaration.Identifier.GetLocation(), type.ToDisplayString()));
+		if (ownMethods.Length == 1 && InjectionSignature.Validate(ownMethods[0]) is { } invalid)
+			return ("", null, Diagnostic.Create(InvalidMethod, invalid.Location, ownMethods[0].ToDisplayString(), invalid.Reason));
 
 		if (!declaration.Modifiers.Any(SyntaxKind.PartialKeyword) || type.ContainingType is not null
 			|| type.IsGenericType || type.IsAbstract || type.IsStatic || type.IsFileLocal)
@@ -113,14 +119,9 @@ public sealed class MethodInjectionGenerator : IIncrementalGenerator
 		return false;
 	}
 
-	private static bool Supported(IMethodSymbol method) => method.MethodKind == MethodKind.Ordinary
-		&& method.DeclaredAccessibility == Accessibility.Public && !method.IsStatic && method.ReturnsVoid
-		&& !method.IsGenericMethod && !method.IsAsync && !method.IsVararg && !method.IsPartialDefinition
-		&& method.PartialDefinitionPart is null
-		&& method.Parameters.All(parameter => parameter.RefKind == RefKind.None
-			&& !parameter.Type.IsRefLikeType && parameter.Type.TypeKind is not (TypeKind.Pointer or TypeKind.FunctionPointer))
-		&& !method.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() is
-			"System.Diagnostics.ConditionalAttribute" or "System.Runtime.CompilerServices.AsyncStateMachineAttribute")
+	private static bool Supported(IMethodSymbol method) => InjectionSignature.Validate(method) is null
+		&& method.MethodKind == MethodKind.Ordinary && !method.IsPartialDefinition && method.PartialDefinitionPart is null
+		&& !method.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.ConditionalAttribute")
 		&& !PreventsDirectCall(method) && !PreventsDirectCall(method.ContainingType);
 
 	private static bool PreventsDirectCall(ISymbol symbol) => symbol.GetAttributes().Any(attribute =>

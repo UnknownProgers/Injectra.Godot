@@ -78,3 +78,7 @@ Each class may declare at most one injection method; overrides inherit `[Inject]
 An override plus another local injection method is a duplicate in either case.
 Duplicate declarations produce `IGG001` at compile time, or `InjectionException` before any calls on reflection fallback.
 Scopes and scene factories select generated plans automatically. Unsupported shapes retain cached reflection fallback.
+
+`IGG002` reports invalid injection signatures during compilation, including invalid overrides.
+Methods must be public instance synchronous void methods, without method type parameters, by-reference,
+ref-struct, pointer/function-pointer or variable-argument parameters. Correct unsupported target shapes retain fallback.

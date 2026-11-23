@@ -120,13 +120,14 @@ internal sealed class MethodInjector
 				    || method.IsStatic
 				    || method.ReturnType != typeof(void)
 				    || method.ContainsGenericParameters
+				    || (method.CallingConvention & CallingConventions.VarArgs) != 0
 					|| method.IsDefined(typeof(AsyncStateMachineAttribute), inherit: false)
 					|| parameters.Any(parameter => parameter.ParameterType.IsByRef
 					    || parameter.ParameterType.IsByRefLike
 					    || parameter.ParameterType.IsPointer
 					    || parameter.ParameterType.IsFunctionPointer))
 					throw new InjectionException($"Unsupported injection method {current}.{method.Name}: "
-						+ $"expected a public instance synchronous void method without generic, by-reference, pointer or ref-struct parameters.");
+						+ $"expected a public instance synchronous void method without generic, variable-argument, by-reference, pointer or ref-struct parameters.");
 
 				var injection = new InjectionMethod(method, parameters.Select(parameter => parameter.ParameterType).ToArray());
 				if (method.IsVirtual)

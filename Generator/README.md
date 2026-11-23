@@ -13,3 +13,8 @@ Generated calls use the current resolver and preserve injection error causes.
 
 The generator is built separately from the game; only its generated C# code becomes part of the game assembly.
 NuGet publication is not configured yet. See the [addon repository](https://github.com/UnknownProgers/Injectra.Godot) for development and runtime setup.
+
+`IGG002` rejects invalid local Node injection signatures: non-public/static, non-void, async, generic methods,
+and by-reference, ref-struct, pointer/function-pointer or variable-argument parameters.
+It applies to abstract bases, overrides and unsupported target shapes too. Valid unsupported shapes continue to use reflection fallback.
+This package targets Node method injection; ordinary C# services use the base Injectra constructor generator.

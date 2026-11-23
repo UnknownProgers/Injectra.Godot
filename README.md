@@ -255,6 +255,9 @@ An override plus another injection method in the same class is still a duplicate
 Duplicate methods produce compiler error `IGG001` for Node classes when the generator is present;
 reflection fallback throws `InjectionException` before invoking any injection methods.
 Calls follow base-to-derived slot order. A virtual override replaces its base slot and runs once at that slot's position.
+`IGG002` reports non-public/static methods, non-void returns, async methods, generic injection methods,
+and by-reference, pointer, ref-struct or variable-argument parameters. Signature errors point to the method or parameter.
+The same validation applies to local overrides and to Node shapes that otherwise use reflection fallback.
 Fields, properties, static methods, and async injection are unsupported.
 Plain C# services should normally use constructor injection.
 
@@ -355,10 +358,10 @@ The existing scope and scene factory automatically use that path. No manual inje
 Generated code resolves arguments through the current container, preserving child overrides and error causes.
 
 Generated plans include inherited methods, virtual overrides, hidden methods and concrete leaves without local attributes.
-Nested and generic target classes, custom external base classes and unsupported method signatures retain reflection fallback.
+Valid methods on nested/generic target classes, custom external base classes, and methods that cannot safely be called directly retain reflection fallback. Invalid local signatures produce `IGG002` instead.
 An inherited generated implementation refuses an uncovered runtime type so it cannot silently skip derived injection methods.
-The addon remains usable without the generator. Resources and ordinary C# objects keep the existing reflection path;
-ordinary services should normally use constructor injection.
+The addon remains usable without the generator through cached reflection. This generator intentionally targets Nodes;
+ordinary C# services use Injectra constructor injection and its constructor generator.
 
 ## Editor diagnostics
 

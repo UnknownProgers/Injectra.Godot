@@ -132,14 +132,6 @@ public sealed partial class MethodInjectionGeneratorTests
 	}
 
 	[Theory]
-	[InlineData("[Inject] private void Construct() { }")]
-	[InlineData("[Inject] public static void Construct() { }")]
-	[InlineData("[Inject] public int Construct() => 0;")]
-	[InlineData("[Inject] public void Construct<T>() { }")]
-	[InlineData("[Inject] public void Construct(ref int value) { }")]
-	[InlineData("[Inject] public void Construct(System.Span<int> value) { }")]
-	[InlineData("[Inject, System.Runtime.CompilerServices.AsyncStateMachine(typeof(object))] public void Construct() { }")]
-	[InlineData("[Inject] public async void Construct() { await System.Threading.Tasks.Task.Yield(); }")]
 	[InlineData("[Inject, System.Diagnostics.Conditional(\"UNDEFINED\")] public void Construct() { }")]
 	[InlineData("[Inject, System.Obsolete(\"forbidden\", true)] public void Construct() { }")]
 	[InlineData("[Inject, System.Obsolete(\"legacy\", DiagnosticId = \"CUSTOM001\")] public void Construct() { }")]
@@ -158,7 +150,7 @@ public sealed partial class MethodInjectionGeneratorTests
 	[InlineData("public class Target : Godot.Node { [Inject] public void Construct() { } }")]
 	[InlineData("public partial class Target { [Inject] public void Construct() { } }")]
 	[InlineData("public partial class Holder { public partial class Target : Godot.Node { [Inject] public void Construct() { } } }")]
-	public void TypesOutsideTheFirstStageStayOnReflection(string declaration)
+	public void CorrectUnsupportedTargetsKeepReflectionFallback(string declaration)
 	{
 		Assert.Empty(Generate("using Injectra;\n" + declaration).Generated);
 	}
@@ -203,7 +195,7 @@ public sealed partial class MethodInjectionGeneratorTests
 		};
 		var compilation = CSharpCompilation.Create("GeneratedGame_" + Guid.NewGuid().ToString("N"),
 			sources.Concat(support).Select(source => CSharpSyntaxTree.ParseText(source, parse)), References,
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable, allowUnsafe: true));
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([new MethodInjectionGenerator().AsSourceGenerator()], parseOptions: parse);
 		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out var diagnostics);
 		var errors = updated.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();

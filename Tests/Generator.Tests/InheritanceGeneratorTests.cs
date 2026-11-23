@@ -222,9 +222,9 @@ public sealed partial class MethodInjectionGeneratorTests
 	}
 
 	[Fact]
-	public void InvalidBaseMethodKeepsTheWholePlanOnReflection()
+	public void InvalidBaseMethodIsReportedOnceWithoutGeneratingPartialPlans()
 	{
-		var result = Generate("""
+		var result = GenerateWithDiagnostics("""
 			using Injectra;
 			public partial class Base : Godot.Node
 			{
@@ -233,6 +233,7 @@ public sealed partial class MethodInjectionGeneratorTests
 			public partial class Child : Base { public override void Construct() { } }
 			""");
 		Assert.Empty(result.Generated);
+		Assert.Equal("IGG002", Assert.Single(result.Diagnostics).Id);
 	}
 
 	[Fact]
