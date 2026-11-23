@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: dotnet build Injectra.Godot.slnx --configuration Debug
 
+      - name: Test method generator
+        run: dotnet test Tests/Generator.Tests/Generator.Tests.csproj --configuration Debug --no-build
+
       - name: Install Godot .NET
         run: |
           bundle="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"

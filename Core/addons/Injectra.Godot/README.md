@@ -68,3 +68,10 @@ Each editor debugging session has its own tab contents. This inspects live scope
 Development and release builds use the same addon directory: `addons/Injectra.Godot`.
 The repository contains one plugin configuration at `Core/addons/Injectra.Godot/plugin.cfg`.
 The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
+
+## Method generation
+
+The compiler-only package is named `Injectra.Godot.Generation`; publication is not configured yet.
+This repository currently references its `Generator` project as an analyzer.
+The first stage generates direct calls for top-level, nongeneric partial Node classes with one supported local `[Inject]` method.
+Scopes and scene factories select it automatically. Other shapes retain cached reflection fallback.

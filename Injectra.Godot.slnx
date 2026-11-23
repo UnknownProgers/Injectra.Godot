@@ -1,3 +1,7 @@
 <Solution>
 	<Project Path="Core/Core.csproj"/>
+	<Project Path="Generator/Generator.csproj"/>
+	<Folder Name="/Tests/">
+		<Project Path="Tests/Generator.Tests/Generator.Tests.csproj"/>
+	</Folder>
 </Solution>

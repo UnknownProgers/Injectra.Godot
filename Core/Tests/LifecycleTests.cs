@@ -17,6 +17,7 @@ public partial class LifecycleTests : Node
 			PackedSceneCanBePreparedBeforeAddChild();
 			ReadyDoesNotRepeatWithoutRequestReady();
 			InjectionTests.Run(this);
+			GeneratedInjectionTests.Run();
 			ScopeTests.Run(this);
 			SceneRegistryTests.Run(this);
 			DiagnosticsTests.Run(this);

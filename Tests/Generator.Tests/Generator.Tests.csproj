@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<AssemblyName>Injectra.Godot.Generation.Tests</AssemblyName>
+		<RootNamespace>Injectra.Godot.Generation.Tests</RootNamespace>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
+		<PackageReference Include="xunit" Version="2.9.3"/>
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
+		<ProjectReference Include="../../Generator/Generator.csproj"/>
+		<None Include="../../Core/addons/Injectra.Godot/Generation/IGeneratedInjectable.cs" Link="RuntimeSources/IGeneratedInjectable.cs" CopyToOutputDirectory="PreserveNewest"/>
+		<None Include="../../Core/addons/Injectra.Godot/InjectionException.cs" Link="RuntimeSources/InjectionException.cs" CopyToOutputDirectory="PreserveNewest"/>
+	</ItemGroup>
+	<ItemGroup Condition="'$(InjectraSourcePath)' == ''">
+		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>
+	</ItemGroup>
+	<ItemGroup Condition="'$(InjectraSourcePath)' != ''">
+		<ProjectReference Include="$(InjectraSourcePath)/Core/Core.csproj"/>
+	</ItemGroup>
+</Project>

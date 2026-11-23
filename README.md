@@ -24,7 +24,7 @@ Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
 - Project lifetime through an Autoload `InjectraProjectScope`.
 - Scene and nested scopes with local registrations and dependency overrides.
 - Inspector-assigned resource installers and code-based installers.
-- Public method injection with cached reflection metadata.
+- Public method injection with generated direct calls for simple Node classes and cached reflection fallback.
 - An automatically registered `SceneFactory` for each scope.
 - Root-only injection by default; explicit subtree injection when needed.
 - Container ownership and disposal supplied by Injectra.
@@ -340,6 +340,20 @@ Closing a level preserves project services. Closing the project container also d
 A scope that left the tree is permanently closed: create a new instance instead of re-entering it.
 Do not transfer nodes or resources to container ownership simply to match scope lifetime; native Godot ownership still applies.
 
+## Method generation (first stage)
+
+`Injectra.Godot.Generation` is a compiler-only generator, developed in this repository's `Generator` project.
+The local Godot project references it as an analyzer. NuGet publication is not configured yet.
+
+For a top-level, nongeneric partial Node class with one supported local `[Inject]` method, it emits a direct C# call.
+The existing scope and scene factory automatically use that path. No manual injector registration is required.
+Generated code resolves arguments through the current container, preserving child overrides and error causes.
+
+Custom inherited injection plans, multiple injection methods, nested and generic classes remain on reflection in this first stage.
+An inherited generated implementation refuses an uncovered runtime type so it cannot silently skip derived injection methods.
+The addon remains usable without the generator. Resources and ordinary C# objects keep the existing reflection path;
+ordinary services should normally use constructor injection.
+
 ## Editor diagnostics
 
 1. Build the C# project, then enable **Injectra Diagnostics** in **Project → Project Settings → Plugins**.
@@ -367,7 +381,7 @@ The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
 ## Current boundaries
 
 - Main-thread use only.
-- Cached metadata, but reflection-based method calls. Generated method injection is not implemented yet.
+- Method generation currently covers top-level, nongeneric partial Node classes with one local public injection method. Inheritance and multiple injection methods use reflection fallback.
 - No separate addon NuGet package. The editor plugin is optional and used only for diagnostics.
 
 ## Demo and development
@@ -386,9 +400,12 @@ Build and run tests with the Godot .NET executable on your PATH:
 
 ```sh
 dotnet build Injectra.Godot.slnx
+dotnet test Tests/Generator.Tests/Generator.Tests.csproj
 godot --headless --path Core --editor --import
 godot --headless --path Core res://Tests/LifecycleTests.tscn
 ```
+
+Engine integration tests live in `Core/Tests` and run inside the Godot project. Generator tests live in `Tests/Generator.Tests` and run with `dotnet test`.
 
 To develop against local Injectra sources, use `-p:InjectraSourcePath=/absolute/path/to/Injectra`, or set that property in an ignored
 `Directory.Build.local.props`. Releases use the published NuGet dependency.

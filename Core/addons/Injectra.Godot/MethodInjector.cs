@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Godot;
+using Injectra.Godot.Generation;
 
 namespace Injectra.Godot;
 
@@ -34,6 +35,9 @@ internal sealed class MethodInjector
 			throw new ObjectDisposedException(target.GetType().FullName);
 
 		var type = target.GetType();
+		if (target is IGeneratedInjectable generated && generated.TryInject(type, _resolver))
+			return;
+
 		if (!_methods.TryGetValue(type, out var methods))
 		{
 			methods = Prepare(type);
