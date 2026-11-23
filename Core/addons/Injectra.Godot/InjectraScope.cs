@@ -28,7 +28,7 @@ public partial class InjectraScope : Node
 
 	/// <summary>Optional scene mappings. Missing types fall back to ancestor scopes.</summary>
 	[Export]
-	public SceneRegistry? SceneRegistry { get; set; }
+	public InjectraSceneRegistry? SceneRegistry { get; set; }
 
 	/// <summary>Selects root-only injection by default, or explicit injection of descendants.</summary>
 	[Export]

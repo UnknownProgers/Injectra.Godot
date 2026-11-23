@@ -1,12 +1,10 @@
 <p align="center">
-  <img src="Core/addons/Injectra.Godot/icons/icon.png" alt="Injectra.Godot Logo" width="120"/>
+  <img src="Core/addons/Injectra.Godot/icons/icon.png" alt="Injectra.Godot" width="120"/>
 </p>
 
 <h1 align="center">Injectra.Godot</h1>
 
-<p align="center">
-  A lightweight C# dependency injection addon for Godot, built on Injectra.
-</p>
+<p align="center">A lightweight C# dependency injection addon for Godot, built on Injectra.</p>
 
 <p align="center">
   <a href="https://github.com/UnknownProgers/Injectra.Godot/releases">
@@ -17,53 +15,47 @@
   </a>
 </p>
 
-[Injectra](https://github.com/UnknownProgers/Injectra) supplies the engine-independent container.
-This addon connects it to Godot scenes: scopes, installers, public `[Inject]` methods, and scene creation before tree callbacks.
+Register your services in a scope, then receive them in your nodes through `[Inject]` methods.
+The addon creates the container, injects selected nodes, and closes it when the scope leaves the scene tree.
+[Injectra](https://github.com/UnknownProgers/Injectra) provides the engine-independent container.
 
-Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
+**Alpha.** Tested on Linux with Godot **4.6.1 .NET**, **.NET 11**, and **C# 15**.
+The current Injectra package requires .NET 11; a project targeting .NET 8 must be retargeted before installation.
+This addon is for C# projects using the .NET edition of Godot.
 
-## Features
+## What it provides
 
-- Project lifetime through an Autoload `InjectraProjectScope`.
-- Scene and nested scopes with local registrations and dependency overrides.
-- Inspector-assigned resource installers and code-based installers.
-- Public method injection with generated direct calls for simple Node classes and cached reflection fallback.
-- An automatically registered `SceneFactory` for each scope.
-- Root-only injection by default; explicit subtree injection when needed.
-- Container ownership and disposal supplied by Injectra.
-- One lifecycle manager per root, with initialization, frame updates, and fixed physics updates for its child scopes.
+- Project, scene and nested scopes, with dependency overrides.
+- Resource installers configured in the inspector, plus registrations from code.
+- Method injection with generated calls and a reflection fallback.
+- A `SceneFactory` that injects scenes before adding them to the tree.
+- A scene registry for creating scenes by their C# node type.
+- Initialization, frame and physics callbacks for registered services.
+- An optional editor panel for inspecting running containers.
 
-## Installation
+## Install
 
-1. Use a Godot **.NET** project
-2. Download `Injectra.Godot-<version>.zip` from [Releases](https://github.com/UnknownProgers/Injectra.Godot/releases).
-3. Extract it next to `project.godot`:
+1. Download `Injectra.Godot-<version>.zip` from [GitHub Releases](https://github.com/UnknownProgers/Injectra.Godot/releases).
+2. Extract it into your game so the directory is **`res://addons/Injectra.Godot/`**.
+3. Add both NuGet packages to your game's `.csproj`:
 
-   ```text
-   MyGame/
-   ├── project.godot
-   ├── MyGame.csproj
-   └── addons/Injectra.Godot/
-       ├── InjectraScope.cs
-       ├── InjectraProjectScope.cs
-       ├── ResourceInstaller.cs
-       ├── SceneFactory.cs
-       ├── icons/
-       └── ...
-   ```
+```xml
+<ItemGroup>
+	<PackageReference Include="Injectra" Version="0.7.0-alpha.1" />
+	<PackageReference Include="Injectra.Godot.Generation" Version="0.9.5-alpha.1" PrivateAssets="all" />
+</ItemGroup>
+```
 
-4. Add the underlying Injectra package to **your game's** project:
+4. Run `dotnet build MyGame.csproj`, then return to Godot.
 
-   ```sh
-   dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
-   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.4-alpha.1
-   dotnet build MyGame.csproj
-   ```
+Use the generator version matching your addon release. `Injectra` supplies the container and constructor generator;
+`Injectra.Godot.Generation` supplies the compiler generator for `[Inject]` methods on nodes.
+The addon itself is distributed as source files in the ZIP. Both generators are connected automatically by NuGet.
 
-The addon compiles with the game. No DLL copying or manual `MethodInjector` construction is required. Runtime DI does not require editor plugin activation.
-Multitargeting and platform exports outside the tested Linux setup have not been validated yet.
+You do not need to copy DLLs, create a `MethodInjector`, or enable an editor plugin to use DI.
+Enable **Injectra Diagnostics** only if you want the debugger panel described below.
 
-## Quick start
+## Your first scene
 
 Create a service in `GameSession.cs`:
 
@@ -77,7 +69,7 @@ public sealed class GameSession : IDisposable
 }
 ```
 
-Register it in `GameInstaller.cs`:
+Create `GameInstaller.cs` to register it:
 
 ```csharp
 using Godot;
@@ -94,190 +86,191 @@ public partial class GameInstaller : ResourceInstaller
 }
 ```
 
-Consume it in `GameController.cs`:
+Receive the service in `GameController.cs`:
 
 ```csharp
 using Godot;
 using Injectra;
-using Injectra.Godot;
 
 public partial class GameController : Node
 {
 	private GameSession _session = null!;
-	private SceneFactory _scenes = null!;
 
 	[Inject]
-	public void Construct(GameSession session, SceneFactory scenes)
+	public void Construct(GameSession session)
 	{
 		_session = session;
-		_scenes = scenes;
 	}
 
 	public override void _Ready() => GD.Print($"Session: {_session.Id}");
 }
 ```
 
-Build once so Godot discovers the classes. Create this scene:
+Build the project so Godot discovers the scripts. Create this scene:
 
 ```text
 GameScope : InjectraScope          Injection = Tree
 └── GameController                 GameController.cs
 ```
 
-Add a `GameInstaller` resource to the scope's `Installers` array in the inspector. Run the scene.
-The controller receives dependencies before its `_EnterTree()` and `_Ready()`.
+In `GameScope`'s inspector:
 
-**`Root` is the default.** It injects only the scope node, not its parent, siblings, or children.
-Select `Tree` for the structure above. To inject a custom scope node itself, derive its script from `InjectraScope`.
+1. Add a `GameInstaller` resource to **Installers**.
+2. Set **Injection** to **Tree**.
+3. Run the scene. The controller prints its injected session ID.
 
-## Project and scene lifetimes
+**The default is `Root`.** It injects only the scope node itself. Use `Tree` to inject descendants, as in this example.
+The addon does not search parents or siblings for injection targets.
 
-For services that survive scene changes:
+The singleton is created when first requested. Closing this scope disposes its owned services, including `GameSession`.
 
-1. Create a scene whose root is `InjectraProjectScope`.
-2. Assign its project-level installers in the inspector.
-3. Add the scene in **Project Settings → Globals → Autoload**.
-4. Place it before other Autoloads that depend on it.
+## When does injection happen?
 
-Only one project scope can be active. Ordinary scopes select their parent as follows:
-
-| Situation | Container parent |
-|---|---|
-| Scope created by `SceneFactory` | The factory's container |
-| Scope loaded by Godot with a scope ancestor | The nearest ancestor scope's container |
-| No scope ancestor | The active project scope's container |
-| No project scope either | An independent root container |
-
-An Autoload and the current scene are siblings in Godot, but their containers have a parent/child relationship:
-
-```text
-Godot scene tree                         DI containers
-
-Root                                    Project container
-├── ProjectScope [Autoload]              └── Level container
-└── LevelScope                              └── Inventory container
-    ├── Player
-    └── InventoryScope
-```
-
-Register persistent services in project installers, level-specific services in level installers, and overrides in nested scope installers.
-Ancestor injection delegates nested scope preparation to that scope's own container.
-
-Singletons belong to the declaring container. Child overrides do not rebuild parent singletons.
-Inherited transients use the requesting child's overrides. Each scope registers its own `SceneFactory`.
-
-## Scene creation
-
-Receive `SceneFactory` through `[Inject]`. For a scene with a root `Player : Node2D`:
-
-```csharp
-// Inside a node that received SceneFactory through injection:
-var player = _scenes.Instantiate<Player>(playerScene, parent);
-
-// Explicitly inject descendant nodes too:
-var squad = _scenes.Instantiate<Node2D>(squadScene, parent,
-	injection: SceneInjection.Tree);
-
-// Without a parent, return an injected, detached scene:
-var detached = _scenes.Instantiate<Player>(playerScene);
-```
-
-The caller or scene tree owns successful instances. Injection failure frees the newly instantiated subtree.
-`parent` selects placement; it does not replace the factory's resolver.
-
-A scope root creates a child of the factory's container and uses **its own inspector injection mode**.
-In `Tree` mode, nested scopes are prepared before attachment. `Root` mode does not search descendants for scopes;
-those prepare when Godot enters them into the tree.
-
-Calling `PackedScene.Instantiate()` and `AddChild()` directly does not route ordinary nodes through the addon.
-For creation by type, create a `SceneRegistry` resource and assign it to a scope's **SceneRegistry** property
-(usually the project scope). Add `SceneRegistration` entries with a C# **Script** and its **Scene**:
-
-```csharp
-var player = _scenes.Instantiate<Player>(parent);
-var detached = _scenes.Instantiate<Player>();
-var squad = _scenes.Instantiate<Squad>(parent, injection: SceneInjection.Tree);
-```
-
-Mappings use the exact script type. Children inherit parent mappings and can override individual types through a local registry.
-Mappings are snapshotted during scope preparation; editing the resource afterwards does not change a prepared factory.
-Duplicate local keys and incomplete entries fail during preparation. Missing mappings and incompatible roots fail during creation.
-The selected script must belong to a Godot C# node type. No nodes are instantiated to discover registry keys.
-If several scenes share the same script, register one default and use the explicit `PackedScene` overload for alternatives.
-The demo project scope registers `DemoActor`; scene and child factories inherit this mapping while using their own dependencies.
-
-## Initialization order
-
-### Scene loaded by Godot
+For a scene opened by Godot:
 
 ```text
 Scope._EnterTree()
-    → select parent container
-    → Installers in inspector array order
-    → Configure(builder)
-    → register current scope and local SceneFactory
-    → Build() or parent.CreateChild(...)
-    → preparation callback: inject nodes and prepare nested scopes in Tree mode
-    → attach prepared lifecycle participants and initialize them
-    → descendant _EnterTree() callbacks
-    → descendant _Ready() callbacks
-    → scope _Ready()
+→ resource installers, in inspector order
+→ Configure(builder)
+→ container preparation
+→ injection into selected nodes
+→ lifecycle initialization
+→ descendant _EnterTree()
+→ _Ready(), children before parents
 ```
 
-The scope's own `_EnterTree()` has already started; selected descendants receive injection before their callbacks.
-Override scope callbacks with `base._EnterTree()` first, and call `base._ExitTree()` when leaving.
+The scope's own `_EnterTree()` has already started. Selected descendants receive dependencies before their `_EnterTree()` and `_Ready()`.
 
-### Scene created by the factory
+For a scene created through `SceneFactory`:
 
 ```text
 PackedScene.Instantiate()
-    → inject root or selected subtree
-      (scope roots first build their own container)
-    → attach scope lifecycle participants and initialize them
-    → AddChild(parent), if supplied
-    → _EnterTree() callbacks, parent before children
-    → _Ready() callbacks, children before parent
+→ prepare containers for selected scopes
+→ inject selected nodes
+→ initialize their lifecycle participants
+→ AddChild(), if a parent was supplied
+→ _EnterTree()
+→ _Ready()
 ```
 
-Factory-selected nodes receive dependencies **before `_EnterTree()`**, not just before `_Ready()`.
-Prepared scopes do not build or inject again when their `_EnterTree()` follows.
+Here injection happens **before `_EnterTree()`**, including on the scene root.
+A prepared scope does not build or inject again when it enters the tree.
+If a new scope is created during a lifecycle callback, its initialization waits until that traversal finishes;
+injection still completes immediately, and initialization precedes its first tick.
 
-Creation during a lifecycle callback defers the new scope's attachment and initialization until that traversal ends.
-Injection still finishes immediately; `Initialize()` always precedes the participant's first tick.
+`Initialize()` does not mean the scene is ready or attached to the tree. Put tree-dependent startup in Godot callbacks.
+Installers only declare registrations: do not build the container or spawn scenes inside them.
+Services are created when resolved, unless registered with `.NonLazy()` or requested during lifecycle preparation.
 
-`Build()` validates registrations and prepares constructor graphs. Services are created on resolution unless marked `.NonLazy()`.
-Installers configure registrations: do not spawn scenes, build the builder, or start game logic inside them.
+## Project, scene and child scopes
 
-## Injection methods
+Use a project scope for services that must survive scene changes:
 
-`[Inject]` belongs to `Injectra`. Supported methods are public instance synchronous `void` methods, without generic parameters,
-`ref`, `out`, `in`, pointers, function pointers, or ref-struct arguments.
+1. Create a scene with an `InjectraProjectScope` root.
+2. Assign its installers.
+3. Add it in **Project Settings → Globals → Autoload**, before Autoloads that depend on it.
 
-Each declaring class may have at most one injection method. Different inheritance levels may each declare one.
-Overrides inherit `[Inject]`; repeating the attribute is allowed and does not add another call.
-An override plus another injection method in the same class is still a duplicate, with or without the repeated attribute.
-Duplicate methods produce compiler error `IGG001` for Node classes when the generator is present;
-reflection fallback throws `InjectionException` before invoking any injection methods.
-Calls follow base-to-derived slot order. A virtual override replaces its base slot and runs once at that slot's position.
-`IGG002` reports non-public/static methods, non-void returns, async methods, generic injection methods,
-and by-reference, pointer, ref-struct or variable-argument parameters. Signature errors point to the method or parameter.
-The same validation applies to local overrides and to Node shapes that otherwise use reflection fallback.
-Fields, properties, static methods, and async injection are unsupported.
-Plain C# services should normally use constructor injection.
+Only one project scope can be active.
 
-An attribute alone does not make an arbitrary node participate: a scope or factory must select it.
-Injection is not a `_Ready()` callback. Child tree callbacks may not have run yet; keep tree-dependent startup in Godot callbacks.
+```text
+ProjectScope [Autoload]          persistent services
+└── LevelScope                  level services
+    ├── InventoryScope          local services or overrides
+    └── CombatScope             local services or overrides
+```
 
-Resources are not scanned recursively, and `RegisterInstance` does not automatically invoke injection methods.
-The internal injector supports resources, but the public scope API does not expose automatic resource-injection registration yet.
+This is the **container hierarchy**. The Autoload and the level scene are siblings in Godot's actual scene tree.
 
-## Godot lifecycle
+| How a scope is created | Its parent container |
+|---|---|
+| Through `SceneFactory` | The factory's container |
+| By Godot, under another scope | The nearest ancestor scope's container |
+| Without a scope ancestor | The active project scope's container |
+| Without either | A new independent root |
 
-A root scope automatically enables one `InjectraLifecycle` and initializes it after container preparation.
-The Autoload project scope is normally this root. A scene launched without a project scope drives its own manager.
-Child scopes inherit the manager and do not dispatch it again.
+Children use parent registrations unless they register their own replacement.
+A parent singleton remains owned by the parent and keeps its original dependencies.
+An inherited transient is created using the requesting child's overrides.
 
-Register lifecycle contracts explicitly:
+Each scope gets its own `SceneFactory`. During `Tree` injection, a nested scope prepares its own branch with its own container.
+With `Root` injection, descendant scopes are not searched; they prepare when Godot enters them into the tree.
+
+Closing a child disposes its owned services and descendants while preserving parent services and sibling branches.
+A scope that leaves the tree is permanently closed. Create a new scope to load the level again.
+
+## Create scenes with SceneFactory
+
+Receive the factory through injection:
+
+```csharp
+using Godot;
+using Injectra;
+using Injectra.Godot;
+
+public partial class Spawner : Node
+{
+	[Export] public PackedScene PlayerScene { get; set; } = null!;
+	private SceneFactory _scenes = null!;
+
+	[Inject]
+	public void Construct(SceneFactory scenes) => _scenes = scenes;
+
+	public Node Spawn() => _scenes.Instantiate<Node>(PlayerScene, this);
+}
+```
+
+Select the spawner for injection through its scope or a factory-created scene. The factory injects the new scene's root by default.
+To include descendants, pass `injection: SceneInjection.Tree`.
+Omit the parent argument to receive an injected scene that is still detached.
+
+The supplied parent determines placement, not which container resolves dependencies.
+A scene whose root is an `InjectraScope` creates a child container and uses that scope's own **Injection** setting.
+Successful instances belong to the caller or the Godot scene tree. If injection fails, the factory frees the new subtree.
+Calling `PackedScene.Instantiate()` directly does not inject ordinary nodes.
+
+### Create a scene by C# type
+
+Create a `InjectraSceneRegistry` resource and assign it to a scope's **SceneRegistry** property, usually on the project scope.
+Add `InjectraSceneRegistration` resources to **Entries**. For each entry, select the node's C# **Script** and its **Scene**.
+
+```csharp
+var player = scenes.Instantiate<Player>(parent);
+```
+
+`Player` is the C# type of that scene's root. Mappings use exact types.
+Children inherit mappings and can override them in their own registry.
+Mappings are fixed during scope preparation; later resource edits do not update a prepared factory.
+Duplicate or incomplete entries fail during preparation. Missing mappings or incompatible roots fail during creation.
+If multiple scenes use the same script, register one default and pass a `PackedScene` explicitly for the others.
+
+## Injection rules and code generation
+
+`[Inject]` comes from the base `Injectra` package. Apply it to a **public instance synchronous `void` method**.
+There is at most one injection method per declaring class. Different inheritance levels may each introduce one.
+
+- Virtual overrides inherit `[Inject]`; repeating it is allowed. The override runs once in the original base method's slot.
+- An override plus another injection method in the same class is a duplicate.
+- Generic methods, `async`, `ref`/`out`/`in`, ref-struct, pointer and variable-argument parameters are unsupported.
+- Fields and properties are not injection targets. Use constructors for ordinary C# services.
+
+The generator reports duplicate methods as **IGG001** and invalid signatures as **IGG002**.
+Runtime fallback validates the complete plan before invoking injection methods.
+
+Top-level, nongeneric `partial` Node classes get generated direct calls, including supported inherited methods.
+Types with no injection methods get an empty plan, avoiding reflection discovery.
+Each plan accepts only its exact runtime type, so an uncovered descendant cannot silently miss its own methods.
+
+Valid nested/generic targets, custom external base classes, and methods the generator cannot call directly use reflection fallback.
+Each injector caches reflection plans by runtime type. Discovery skips Godot's framework classes but checks user ancestors.
+The addon still works without the generator through this fallback.
+
+Referenced resources are not traversed, and `RegisterInstance` does not automatically invoke `[Inject]`.
+Automatic resource injection is not currently exposed by the scope API.
+
+## Service lifecycle
+
+The root scope enables one `InjectraLifecycle` for its entire container hierarchy.
+Child scopes join it automatically. Register the lifecycle interfaces explicitly:
 
 ```csharp
 using Injectra;
@@ -291,32 +284,31 @@ public sealed class Simulation : IInitializable, IFrameTickable, IPhysicsTickabl
 	public void PhysicsTick(double deltaTime) { }
 }
 
-// In an installer:
+// In your installer:
 // builder.Register<Simulation>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 ```
 
-| Contract | Source |
+| Interface | When it runs |
 |---|---|
-| `Injectra.Lifecycle.IInitializable` | After branch preparation, once |
+| `Injectra.Lifecycle.IInitializable` | Once, after branch preparation |
 | `Injectra.Lifecycle.IFrameTickable` | Root scope `_Process(delta)` |
 | `Injectra.Godot.IPhysicsTickable` | Root scope `_PhysicsProcess(delta)` |
 
-Implementing an interface is not enough: expose it through `.As<T>()` or `.AsImplementedInterfaces()`.
-Participants must be singleton or instance registrations; transient lifecycle registrations are rejected.
-Registered nodes must also be selected for method injection when they depend on `[Inject]` methods.
+Implementing an interface alone does not register it. Expose it using `.As<T>()` or `.AsImplementedInterfaces()`.
+Participants must be singleton or instance registrations; transient participants are rejected.
+Do not rely on the order of different services within a phase.
 
-`Initialize()` does not promise a ready SceneTree. It can run while a scene is detached; inside a tick, it waits until the current
-lifecycle traversal completes. Keep tree-dependent startup in Godot callbacks.
-Closing a child scope stops its participants and disposes its owned services. A child created inside a tick starts participating in the next phase call.
-Do not synchronously free a root scope inside its own lifecycle callback; use Godot's `QueueFree()` to close it after the callback returns.
+The root's processing and pause mode control dispatch. Individual participant nodes' processing flags do not filter these callbacks.
+A child created during a tick joins after the current traversal. Closing it removes its participants.
+Use `QueueFree()` rather than synchronously freeing the root inside its own lifecycle callback.
 
-The root's Godot processing and pause mode control dispatch. Per-participant Godot node processing flags do not filter lifecycle phases.
-Override `ConfigureLifecycle` on a root scope to add custom phases, calling the base method to preserve physics dispatch.
-Do not call `UseLifecycle()` again in installers: the addon registers it once on the root.
+To add phases, override `ConfigureLifecycle` on the root and call the base method to keep physics dispatch.
+Do not call `UseLifecycle()` in installers; the addon enables it on the root.
+When overriding scope callbacks, call the base implementation so preparation, dispatch and cleanup still happen.
 
-## Installers from code
+## Register from code
 
-Override `Configure` to invoke plain `IInstaller` implementations or add registrations directly:
+Instead of a resource installer, or in addition to one, override `Configure`:
 
 ```csharp
 using Injectra;
@@ -333,114 +325,68 @@ public partial class LevelScope : InjectraScope
 public sealed class LevelState;
 ```
 
-Resource installers run before `Configure`. The fluent API, open generics, factories, and `AsImplementedInterfaces()` behave as
-described in the [Injectra documentation](https://github.com/UnknownProgers/Injectra).
+Resource installers run first, then `Configure`. You can also call plain `IInstaller` implementations there.
+See [Injectra](https://github.com/UnknownProgers/Injectra) for factories, open generics, aliases and the container API.
 
-## Ownership and shutdown
+## Ownership
 
-| Object | Owner |
+| Object | Who disposes it? |
 |---|---|
-| Constructed singleton | Its declaring container |
+| Container-created singleton | Its declaring container |
 | Transient service | Its consumer |
-| `RegisterInstance` value | External by default; `.OwnedByContainer()` transfers disposal |
+| `RegisterInstance` value | External owner by default; `.OwnedByContainer()` transfers disposal |
 | Factory-created node | Caller or Godot scene tree |
 
-Scope shutdown runs in `_ExitTree()`, after descendant exit callbacks. The container disposes owned services; Godot remains
-responsible for nodes. Freeing a prepared, detached scope also closes its container.
+Scopes close in `_ExitTree()`, after descendants leave, or when a prepared detached scope is freed.
+Godot still owns native node/resource lifetimes. Do not transfer disposal to the container just to match a scope lifetime.
 
-Closing a level preserves project services. Closing the project container also disposes remaining children.
-A scope that left the tree is permanently closed: create a new instance instead of re-entering it.
-Do not transfer nodes or resources to container ownership simply to match scope lifetime; native Godot ownership still applies.
+## Inspect the running game
 
-## Method generation
+1. Build the project.
+2. Enable **Injectra Diagnostics** in **Project → Project Settings → Plugins**.
+3. Run the game from the editor.
+4. Open **Debugger → Injectra**, then press **Refresh**.
+5. Select a row for details, or use **Copy text** for the container tree.
 
-`Injectra.Godot.Generation` is a compiler-only generator, developed in this repository's `Generator` project.
-The local Godot project references it as an analyzer. Games install the matching `Injectra.Godot.Generation` NuGet package; it contains no runtime library.
-Use `PrivateAssets="all"` on its PackageReference when packaging your own library.
+The panel shows scope/container hierarchies, registration aliases, lifetimes, ownership, overrides and constructor dependencies.
+Created entries appear before pending registrations. Scope paths appear in the details panel.
+Factory dependencies are unknown; transient instances are not tracked. Container IDs belong to the current snapshot.
 
-For a top-level, nongeneric partial Node class, it emits a complete inherited plan of supported injection methods.
-The existing scope and scene factory automatically use that path. No manual injector registration is required.
-Generated code resolves arguments through the current container, preserving child overrides and error causes.
+Inspection is read-only: it does not resolve services or invoke factories. Refresh is manual, with no per-frame scanning.
+Resume a paused game to let it answer a refresh request. The panel clears when the game stops.
+The plugin manages an `InjectraDiagnostics` Autoload for debugger communication; disabling the plugin removes it.
 
-Generated plans include inherited methods, virtual overrides, hidden methods and concrete leaves without local attributes.
-Valid methods on nested/generic target classes, custom external base classes, and methods that cannot safely be called directly retain reflection fallback. Invalid local signatures produce `IGG002` instead.
-An inherited generated implementation refuses an uncovered runtime type so it cannot silently skip derived injection methods.
-The addon remains usable without the generator through cached reflection. This generator intentionally targets Nodes;
-ordinary C# services use Injectra constructor injection and its constructor generator.
+## Performance
 
-## Editor diagnostics
+Measured inside Godot 4.6.1 .NET on Linux x64, AMD Ryzen 7 9800X3D, .NET 11,
+using Injectra 0.7.0-alpha.1. Optimized editor build, tiered compilation disabled;
+medians of seven short samples. These are indicative measurements, not export-build guarantees.
 
-1. Build the C# project, then enable **Injectra Diagnostics** in **Project → Project Settings → Plugins**.
-2. Run the game from the editor.
-3. Open the bottom **Debugger** panel and select its **Injectra** tab.
-4. Press **Refresh** to capture the running game's container hierarchy. Select a row to inspect its details.
-5. Use **Copy text** to copy the Core diagnostic tree to the clipboard.
+| Operation | Time | Managed allocation per operation |
+|---|---:|---:|
+| Generated method injection, warm | 43 ns | 0 B |
+| Reflection method injection, warm | 68 ns | 48 B |
+| Reflection method injection, new injector | 5.6–5.9 µs | 6,088 B |
+| PackedScene instantiation without DI | 1.45–1.48 µs | 320 B |
+| SceneFactory instantiation + generated root injection | 1.58–1.60 µs | 320 B |
+| Scope creation + preparation, four user registrations | 2.48–3.17 µs | 5,576 B |
 
-The view is read-only. It shows container children, registration aliases, created/pending state, lifetimes,
-ownership, overrides, and constructor dependency sources. Created entries come first within each container.
-Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no attached scope path.
-Container IDs are local to the snapshot.
-Factory dependencies are unknown, and transient instances are not tracked.
+Method injection uses an existing node and three singleton arguments. A new injector
+includes reflection plan discovery; it does not mean a cold process or first JIT compilation.
+Scene creation uses a single-node scene without parent attachment. Scope preparation
+includes node creation, container registrations and lifecycle setup, without entering the scene tree.
+Cleanup is excluded. Allocation figures cover managed memory, not Godot's native allocations.
 
-The plugin automatically installs an `InjectraDiagnostics` Autoload for editor/runtime communication.
-It registers a message receiver only when Godot's debugger is connected. Disabling the plugin removes the Autoload.
-Snapshots are requested manually, with no per-frame scanning. No services are resolved and no factories are invoked by inspection.
-When the game stops, the panel clears its snapshot and disables runtime actions. A paused game must resume to answer a refresh request.
-Each editor debugging session has its own tab contents. This inspects live scopes; it does not predict containers from edited scenes.
+In this scene fixture, SceneFactory adds approximately 0.12–0.14 µs over direct
+instantiation, with no additional managed allocation per operation. Real costs depend
+on scene size, injection targets and service constructors.
 
-Development and release builds use the same addon directory: `addons/Injectra.Godot`.
-The repository contains one plugin configuration at `Core/addons/Injectra.Godot/plugin.cfg`.
-The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
-
-## Current boundaries
+## Current limits
 
 - Main-thread use only.
-- Method generation covers top-level, nongeneric partial Node classes and supported local inheritance chains. Custom external bases and unsupported target shapes use reflection fallback.
-- No separate addon NuGet package. The editor plugin is optional and used only for diagnostics.
-
-## Demo and development
-
-Open `Core/project.godot` and run `main.tscn`. The Autoload supplies `DemoProjectSession`; the scene scope supplies `DemoSession`
-and `SceneFactory`. Actors display the shared project session ID and receive both sessions before `_EnterTree()`.
-
-The dependency tree starts with two child examples. The same `DemoInstaller` registers a new local `DemoSession`;
-the different `DemoChildInstaller` adds only `DemoChildState`, so that child inherits its parent's `DemoSession`.
-Matching IDs identify shared instances; each scope has its own factory.
-Select a scene or child branch, choose the installer mode, and create an actor or another child under that selection.
-Creation from `FrameTick` captures the selected parent when queued. Closing a branch removes its descendants and disposes owned services,
-while inherited sessions and unrelated branches continue ticking.
-
-Build and run tests with the Godot .NET executable on your PATH:
-
-```sh
-dotnet build Injectra.Godot.slnx
-dotnet test Tests/Generator.Tests/Generator.Tests.csproj
-godot --headless --path Core --editor --import
-godot --headless --path Core res://Tests/LifecycleTests.tscn
-```
-
-Engine integration tests live in `Core/Tests` and run inside the Godot project. Generator tests live in `Tests/Generator.Tests` and run with `dotnet test`.
-
-The addon and generator tests use the published Injectra NuGet package.
+- Some type/method shapes use reflection instead of generated calls, as described above.
+- Other platforms and export configurations have not yet been validated.
 
 ## License
 
 [MIT](LICENSE).
-
-## Publishing
-
-Tagged releases (`v<Version>` matching Directory.Build.props) run generator and
-Godot integration tests, pack the generator in Release, publish it to NuGet, and
-attach the analyzer package alongside the addon ZIP to the GitHub release.
-
-Configure the repository variable `NUGET_USER` with your NuGet username and a
-NuGet Trusted Publishing policy with these values:
-
-- Repository owner: `UnknownProgers`
-- Repository: `Injectra.Godot`
-- Workflow file: `publish.yml`
-- Environment: leave empty (this workflow does not declare an environment)
-- Package: `Injectra.Godot.Generation`
-- Scope: allow pushing new packages and package versions for the first release
-
-See [NuGet Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).

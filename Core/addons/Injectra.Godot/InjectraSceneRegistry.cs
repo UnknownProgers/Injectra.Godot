@@ -5,10 +5,11 @@ namespace Injectra.Godot;
 
 /// <summary>Inspector-authored scene mappings, snapshotted when a scope is prepared.</summary>
 [GlobalClass]
-public partial class SceneRegistry : Resource
+[Icon("res://addons/Injectra.Godot/icons/scene-registry.svg")]
+public partial class InjectraSceneRegistry : Resource
 {
 	/// <summary>Local mappings. Duplicate script keys are rejected during preparation.</summary>
-	[Export] public Array<SceneRegistration> Entries { get; set; } = [];
+	[Export] public Array<InjectraSceneRegistration> Entries { get; set; } = [];
 
 	internal System.Collections.Generic.Dictionary<string, PackedScene> CreateLookup()
 	{

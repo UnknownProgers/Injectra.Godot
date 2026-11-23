@@ -14,15 +14,15 @@ fallback.
 Generated calls use the current resolver and preserve injection error causes.
 
 The generator is built separately from the game; only its generated C# code becomes part of the game assembly.
+Requires a C# Godot .NET project with the matching addon sources installed. The current addon targets .NET 11.
 Install alongside the matching addon release:
 
 ```xml
-<PackageReference Include="Injectra.Godot.Generation" Version="0.9.4-alpha.1" PrivateAssets="all" />
+<PackageReference Include="Injectra.Godot.Generation" Version="0.9.5-alpha.1" PrivateAssets="all" />
 ```
 
 No manual analyzer references are needed. Install `Injectra` separately for the runtime container and constructor generation.
 See the [addon repository](https://github.com/UnknownProgers/Injectra.Godot) for runtime setup.
-Tagged releases publish this analyzer package to NuGet and attach it alongside the addon ZIP on GitHub.
 
 `IGG002` rejects invalid local Node injection signatures: non-public/static, non-void, async, generic methods,
 and by-reference, ref-struct, pointer/function-pointer or variable-argument parameters.

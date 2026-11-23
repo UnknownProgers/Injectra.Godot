@@ -5,12 +5,16 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 ## Installation
 
 1. Extract the release into your project so this directory is `addons/Injectra.Godot/`.
-2. Add the underlying container package to the game and build:
+2. Add the container and method generator packages to your game, then build:
 
    ```sh
    dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
+   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.5-alpha.1
    dotnet build MyGame.csproj
    ```
+
+Tested with Godot 4.6.1 .NET, .NET 11 and C# 15. Your game must target .NET 11.
+Use the generator version matching the addon release; no manual analyzer or DLL references are needed.
 
 The runtime DI features do not require editor plugin activation. These sources compile with the game.
 
@@ -37,8 +41,8 @@ ownership rules, and current limitations. Distributed under the MIT license incl
 
 ## Scene registry
 
-Assign a `SceneRegistry` resource to a scope (usually the project scope). Its `Entries` contain
-`SceneRegistration` resources: select the C# node `Script` and its `Scene`.
+Assign a `InjectraSceneRegistry` resource to a scope (usually the project scope). Its `Entries` contain
+`InjectraSceneRegistration` resources: select the C# node `Script` and its `Scene`.
 
 ```csharp
 var player = scenes.Instantiate<Player>(parent);
@@ -69,19 +73,16 @@ Snapshots are requested manually, with no per-frame scanning. No services are re
 When the game stops, the panel clears its snapshot and disables runtime actions. A paused game must resume to answer a refresh request.
 Each editor debugging session has its own tab contents. This inspects live scopes; it does not predict containers from edited scenes.
 
-Development and release builds use the same addon directory: `addons/Injectra.Godot`.
-The repository contains one plugin configuration at `Core/addons/Injectra.Godot/plugin.cfg`.
-The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
-
 ## Method generation
 
-The compiler-only package is named `Injectra.Godot.Generation`; publication is not configured yet.
-This repository currently references its `Generator` project as an analyzer.
+Install the compiler-only `Injectra.Godot.Generation` NuGet package alongside the addon, as shown above.
+It generates C# during compilation and adds no runtime library. The base `Injectra` package separately supplies constructor generation.
 The generator emits complete inherited plans for top-level, nongeneric partial Node classes.
 Each class may declare at most one injection method; overrides inherit `[Inject]` and may repeat it without changing calls.
 An override plus another local injection method is a duplicate in either case.
 Duplicate declarations produce `IGG001` at compile time, or `InjectionException` before any calls on reflection fallback.
-Scopes and scene factories select generated plans automatically. Unsupported shapes retain cached reflection fallback.
+Scopes and scene factories select generated plans automatically. Types without injection methods get empty plans, avoiding reflection discovery.
+Each generated plan accepts only its exact runtime type. Valid nested/generic targets and custom external bases retain cached reflection fallback.
 
 `IGG002` reports invalid injection signatures during compilation, including invalid overrides.
 Methods must be public instance synchronous void methods, without method type parameters, by-reference,

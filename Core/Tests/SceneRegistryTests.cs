@@ -17,7 +17,7 @@ internal static class SceneRegistryTests
 	{
 		using var scene = CreateScene("RegisteredRoot");
 		using var entry = Entry(scene);
-		using var registry = new SceneRegistry { Entries = [entry] };
+		using var registry = new InjectraSceneRegistry { Entries = [entry] };
 		using var installer = new ScopeInstallerProbe();
 		var scope = new InjectraScope { Installers = [installer], SceneRegistry = registry };
 		scope.Prepare();
@@ -43,11 +43,11 @@ internal static class SceneRegistryTests
 		using var childScene = CreateScene("ChildScene");
 		using var parentEntry = Entry(parentScene);
 		using var childEntry = Entry(childScene);
-		using var parentRegistry = new SceneRegistry { Entries = [parentEntry] };
-		using var childRegistry = new SceneRegistry { Entries = [childEntry] };
+		using var parentRegistry = new InjectraSceneRegistry { Entries = [parentEntry] };
+		using var childRegistry = new InjectraSceneRegistry { Entries = [childEntry] };
 		using var installer = new ScopeInstallerProbe();
 		var root = new InjectraScope { Installers = [installer], SceneRegistry = parentRegistry };
-		using var emptyRegistry = new SceneRegistry();
+		using var emptyRegistry = new InjectraSceneRegistry();
 		var childDependency = new InjectionDependency();
 		var inheriting = new ScopeProbe
 		{
@@ -80,7 +80,7 @@ internal static class SceneRegistryTests
 		using var originalScene = CreateScene("Original");
 		using var replacementScene = CreateScene("Replacement");
 		using var entry = Entry(originalScene);
-		using var registry = new SceneRegistry { Entries = [entry] };
+		using var registry = new InjectraSceneRegistry { Entries = [entry] };
 		using var installer = new ScopeInstallerProbe();
 		var scope = new InjectraScope { Installers = [installer], SceneRegistry = registry };
 		scope.Prepare();
@@ -98,13 +98,13 @@ internal static class SceneRegistryTests
 	{
 		using var scene = CreateScene("Valid");
 		using var entry = Entry(scene);
-		using var duplicate = new SceneRegistry { Entries = [entry, entry] };
+		using var duplicate = new InjectraSceneRegistry { Entries = [entry, entry] };
 		var scope = new InjectraScope { SceneRegistry = duplicate };
 		Throws<InvalidOperationException>(() => scope.Prepare());
 		scope.Free();
 
-		using var missing = new SceneRegistration();
-		using var incomplete = new SceneRegistry { Entries = [missing] };
+		using var missing = new InjectraSceneRegistration();
+		using var incomplete = new InjectraSceneRegistry { Entries = [missing] };
 		var invalidScope = new InjectraScope { SceneRegistry = incomplete };
 		Throws<InvalidOperationException>(() => invalidScope.Prepare());
 		invalidScope.Free();
@@ -114,14 +114,14 @@ internal static class SceneRegistryTests
 		Check(wrongScene.Pack(wrongRoot) == Error.Ok, "Packing failed.");
 		wrongRoot.Free();
 		using var wrongEntry = Entry(wrongScene);
-		using var wrongRegistry = new SceneRegistry { Entries = [wrongEntry] };
+		using var wrongRegistry = new InjectraSceneRegistry { Entries = [wrongEntry] };
 		var wrongScope = new InjectraScope { SceneRegistry = wrongRegistry };
 		wrongScope.Prepare();
 		Throws<InvalidCastException>(() => wrongScope.Container.Resolve<SceneFactory>().Instantiate<InjectionNode>());
 		wrongScope.Free();
 	}
 
-	private static SceneRegistration Entry(PackedScene scene) => new()
+	private static InjectraSceneRegistration Entry(PackedScene scene) => new()
 	{
 		Script = GD.Load<CSharpScript>("res://Tests/InjectionNode.cs"),
 		Scene = scene

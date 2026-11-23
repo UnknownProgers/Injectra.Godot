@@ -4,7 +4,8 @@ namespace Injectra.Godot;
 
 /// <summary>Associates a C# node script with a packed scene.</summary>
 [GlobalClass]
-public partial class SceneRegistration : Resource
+[Icon("res://addons/Injectra.Godot/icons/scene-registration.svg")]
+public partial class InjectraSceneRegistration : Resource
 {
 	/// <summary>The exact C# node type used when requesting the scene.</summary>
 	[Export] public CSharpScript Script { get; set; } = null!;
