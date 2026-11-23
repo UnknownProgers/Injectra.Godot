@@ -9,7 +9,7 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 
    ```sh
    dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
-   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.5-alpha.1
+   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.7-alpha.2
    dotnet build MyGame.csproj
    ```
 

@@ -38,7 +38,7 @@ This addon is for C# projects using the .NET edition of Godot.
 ```xml
 <ItemGroup>
 	<PackageReference Include="Injectra" Version="0.7.0-alpha.1" />
-	<PackageReference Include="Injectra.Godot.Generation" Version="0.9.5-alpha.1" PrivateAssets="all" />
+	<PackageReference Include="Injectra.Godot.Generation" Version="0.9.7-alpha.2" PrivateAssets="all"/>
 </ItemGroup>
 ```
 
