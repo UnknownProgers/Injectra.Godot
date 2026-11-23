@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Injectra.Diagnostics;
 using VariantArray = Godot.Collections.Array;

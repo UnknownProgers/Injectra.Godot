@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace Injectra.Godot.Tests;

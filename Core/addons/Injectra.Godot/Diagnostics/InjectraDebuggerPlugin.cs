@@ -1,4 +1,5 @@
 #if TOOLS
+using System.Collections.Generic;
 using Godot;
 using VariantArray = Godot.Collections.Array;
 

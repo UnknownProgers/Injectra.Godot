@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Godot;
+using Environment = System.Environment;
 
 namespace Injectra.Godot.Tests;
 
@@ -11,7 +15,7 @@ public partial class LifecycleTests : Node
 	{
 		try
 		{
-			Check(System.Environment.Version.Major == 11, "Godot must actually load .NET 11.");
+			Check(Environment.Version.Major == 11, "Godot must actually load .NET 11.");
 			GD.Print($"Runtime: {RuntimeInformation.FrameworkDescription}; Godot: {Engine.GetVersionInfo()["string"]}");
 			DetachedHierarchyIsConstructedBeforeCallbacks();
 			PackedSceneCanBePreparedBeforeAddChild();

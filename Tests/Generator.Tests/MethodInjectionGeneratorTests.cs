@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -184,7 +188,7 @@ public sealed partial class MethodInjectionGeneratorTests
 		return (result.Compilation, result.Source, result.Generated);
 	}
 
-	private static (CSharpCompilation Compilation, string Source, SyntaxTree[] Generated, System.Collections.Immutable.ImmutableArray<Diagnostic> Diagnostics) GenerateWithDiagnostics(params string[] sources)
+	private static (CSharpCompilation Compilation, string Source, SyntaxTree[] Generated, ImmutableArray<Diagnostic> Diagnostics) GenerateWithDiagnostics(params string[] sources)
 	{
 		var parse = new CSharpParseOptions(LanguageVersion.Preview);
 		var support = new[]

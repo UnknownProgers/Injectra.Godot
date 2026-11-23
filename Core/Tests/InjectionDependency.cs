@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Injectra.Godot.Tests;
 
 public sealed class InjectionDependency

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using Godot;
 using Injectra.Godot.Generation;
 
 namespace Injectra.Godot.Tests;
@@ -12,7 +15,7 @@ internal static class GeneratedInjectionTests
 		DerivedNodesGenerateACompletePlan();
 		OverridesRunOnceWithOrWithoutRepeatedAttribute();
 		InjectionNode.Created.Clear();
-		global::Godot.GD.Print("PASS: generated method injection, typed resolution, child overrides, errors and inherited plans.");
+		GD.Print("PASS: generated method injection, typed resolution, child overrides, errors and inherited plans.");
 	}
 
 	private static void GeneratedCallsUseTypedResolution()

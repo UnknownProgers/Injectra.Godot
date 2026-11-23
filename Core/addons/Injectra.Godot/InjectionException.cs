@@ -1,3 +1,5 @@
+using System;
+
 namespace Injectra.Godot;
 
 /// <summary>Reports an invalid injection method or a failure while injecting its dependencies.</summary>

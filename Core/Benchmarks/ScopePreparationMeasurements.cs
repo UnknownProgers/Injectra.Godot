@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Injectra.Godot.Generation;
 using Injectra.Lifecycle;

@@ -1,3 +1,4 @@
+using System;
 using Injectra.Lifecycle;
 
 namespace Injectra.Godot.Demo;

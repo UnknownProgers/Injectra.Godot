@@ -1,4 +1,6 @@
+using System;
 using Godot;
+using Injectra.Godot.Demo;
 
 namespace Injectra.Godot.Tests;
 
@@ -9,7 +11,7 @@ internal static class ProjectScopeTests
 		var project = parent.GetTree().Root.GetNode<InjectraProjectScope>("ProjectScope");
 		Check(ReferenceEquals(project, InjectraProjectScope.Active), "The Autoload must prepare the project scope before the main scene.");
 		var projectContainer = project.Container;
-		var session = projectContainer.Resolve<Demo.DemoProjectSession>();
+		var session = projectContainer.Resolve<DemoProjectSession>();
 		var projectFactory = projectContainer.Resolve<SceneFactory>();
 		using var installer = new ScopeInstallerProbe();
 
@@ -22,7 +24,7 @@ internal static class ProjectScopeTests
 			};
 			parent.AddChild(level);
 			var service = level.Container.Resolve<OwnedService>();
-			Check(ReferenceEquals(level.Container.Resolve<Demo.DemoProjectSession>(), session), "Each level must inherit the same project singleton.");
+			Check(ReferenceEquals(level.Container.Resolve<DemoProjectSession>(), session), "Each level must inherit the same project singleton.");
 			Check(!ReferenceEquals(projectFactory, level.Factory), "A scene scope must register a local factory.");
 			level.Free();
 			Check(service.Disposals == 1 && !session.IsDisposed, "Changing levels must dispose level services and preserve project services.");
@@ -50,7 +52,7 @@ internal static class ProjectScopeTests
 		var standalone = new InjectraScope();
 		standalone.Prepare();
 		Check(standalone.Container.Resolve<SceneFactory>() is not null, "Scenes must still work without a project scope.");
-		Throws<ResolutionException>(() => standalone.Container.Resolve<Demo.DemoProjectSession>());
+		Throws<ResolutionException>(() => standalone.Container.Resolve<DemoProjectSession>());
 		standalone.Free();
 
 		FailureAndShutdown();
@@ -89,7 +91,7 @@ internal static class ProjectScopeTests
 		source.Free();
 		var instance = sourceScope.Container.Resolve<SceneFactory>().Instantiate<ScopeProbe>(scene, placementScope);
 		Check(ReferenceEquals(instance.Dependency, installer.Dependency), "A factory's source container must take precedence over the placement node's scope.");
-		Check(ReferenceEquals(instance.Container.Resolve<Demo.DemoProjectSession>(), InjectraProjectScope.Active!.Container.Resolve<Demo.DemoProjectSession>()), "Factory-created scopes must retain project ancestry.");
+		Check(ReferenceEquals(instance.Container.Resolve<DemoProjectSession>(), InjectraProjectScope.Active!.Container.Resolve<DemoProjectSession>()), "Factory-created scopes must retain project ancestry.");
 		instance.Free();
 		sourceScope.Free();
 		placementScope.Free();

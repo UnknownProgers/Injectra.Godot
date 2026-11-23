@@ -1,3 +1,5 @@
+using System;
+
 namespace Injectra.Godot.Tests;
 
 public partial class ProjectScopeProbe : InjectraProjectScope
