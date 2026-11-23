@@ -5,12 +5,8 @@
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
-	<ItemGroup Condition="'$(InjectraSourcePath)' == ''">
+	<ItemGroup>
 		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>
-	</ItemGroup>
-	<ItemGroup Condition="'$(InjectraSourcePath)' != ''">
-		<ProjectReference Include="$(InjectraSourcePath)/Core/Core.csproj"/>
-		<ProjectReference Include="$(InjectraSourcePath)/Lifecycle/Lifecycle.csproj"/>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="../Generator/Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>

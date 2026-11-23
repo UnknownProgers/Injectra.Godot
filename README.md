@@ -416,8 +416,7 @@ godot --headless --path Core res://Tests/LifecycleTests.tscn
 
 Engine integration tests live in `Core/Tests` and run inside the Godot project. Generator tests live in `Tests/Generator.Tests` and run with `dotnet test`.
 
-To develop against local Injectra sources, use `-p:InjectraSourcePath=/absolute/path/to/Injectra`, or set that property in an ignored
-`Directory.Build.local.props`. Releases use the published NuGet dependency.
+The addon and generator tests use the published Injectra NuGet package.
 
 ## License
 

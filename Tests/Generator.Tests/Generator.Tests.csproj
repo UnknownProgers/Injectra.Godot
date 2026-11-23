@@ -14,10 +14,7 @@
 		<None Include="../../Core/addons/Injectra.Godot/Generation/IGeneratedInjectable.cs" Link="RuntimeSources/IGeneratedInjectable.cs" CopyToOutputDirectory="PreserveNewest"/>
 		<None Include="../../Core/addons/Injectra.Godot/InjectionException.cs" Link="RuntimeSources/InjectionException.cs" CopyToOutputDirectory="PreserveNewest"/>
 	</ItemGroup>
-	<ItemGroup Condition="'$(InjectraSourcePath)' == ''">
+	<ItemGroup>
 		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>
-	</ItemGroup>
-	<ItemGroup Condition="'$(InjectraSourcePath)' != ''">
-		<ProjectReference Include="$(InjectraSourcePath)/Core/Core.csproj"/>
 	</ItemGroup>
 </Project>
