@@ -92,7 +92,8 @@ public partial class DemoController : VBoxContainer
 		Spawn(branch);
 		if (select) row.Select(0);
 		var initialization = scope.Session.IsInitialized && (state is null || state.IsInitialized)
-			? "initialized" : "initialization deferred until Tick ends";
+			? "initialized"
+			: "initialization deferred until Tick ends";
 		StatusLabel.Text = $"{scope.Name} under {parent.Scope.Name}: {description}; session {scope.Session.Id} "
 			+ $"{(inherited ? "inherited (same instance)" : "registered locally (new instance)")}; {initialization}.";
 		Refresh();
@@ -120,7 +121,7 @@ public partial class DemoController : VBoxContainer
 	{
 		var actor = branch.Scenes.Instantiate<DemoActor>(ActorParent(branch));
 		if (!ReferenceEquals(actor.Session, branch.Session) || !ReferenceEquals(actor.Project, _project)
-			|| !ReferenceEquals(actor.Settings, branch.Session.Settings))
+		    || !ReferenceEquals(actor.Settings, branch.Session.Settings))
 			throw new InvalidOperationException("Actor dependencies do not match the selected scope.");
 		var row = Row(branch.Row, $"Actor #{actor.Number}", $"Scene: {actor.Session.Id}", $"Project: {actor.Project.Id}", Colors.White);
 		row.SetText(3, $"HP {actor.Health} · {actor.Settings.SessionLabel}");
@@ -187,6 +188,14 @@ public partial class DemoController : VBoxContainer
 		Row(parent, "DemoSettings · [Export]", $"{settings.SessionLabel} · HP {settings.StartingHealth}", source, SceneColor);
 	}
 
-	private sealed record Branch(int Id, int ParentId, InjectraScope Scope, DemoSession Session, SceneFactory Scenes,
-		TreeItem Row, TreeItem SessionRow, DemoChildState? State = null, TreeItem? StateRow = null);
+	private sealed record Branch(
+		int Id,
+		int ParentId,
+		InjectraScope Scope,
+		DemoSession Session,
+		SceneFactory Scenes,
+		TreeItem Row,
+		TreeItem SessionRow,
+		DemoChildState? State = null,
+		TreeItem? StateRow = null);
 }

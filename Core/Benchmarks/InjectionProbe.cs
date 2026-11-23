@@ -18,5 +18,4 @@ public partial class InjectionProbe : Node
 		Calls++;
 	}
 }
-
 public sealed class BenchmarkDependency;

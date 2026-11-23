@@ -20,6 +20,7 @@ public sealed class DemoSession : IDisposable, IInitializable, IFrameTickable, I
 	public int Frames { get; private set; }
 	public int PhysicsFrames { get; private set; }
 	public void Initialize() => IsInitialized = true;
+
 	public void FrameTick(double deltaTime)
 	{
 		Frames++;
@@ -27,8 +28,10 @@ public sealed class DemoSession : IDisposable, IInitializable, IFrameTickable, I
 		OnNextFrame = null;
 		callback?.Invoke();
 	}
+
 	public void PhysicsTick(double deltaTime) => PhysicsFrames++;
 	public int NextActor() => ++Spawned;
+
 	public void Dispose()
 	{
 		IsDisposed = true;

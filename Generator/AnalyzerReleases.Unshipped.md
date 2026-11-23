@@ -2,7 +2,7 @@
 
 ### New Rules
 
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
-IGG001 | Usage | Error | At most one injection method per declaring Node class.
-IGG002 | Usage | Error | Invalid Inject method signature.
+ Rule ID | Category | Severity | Notes
+---------|----------|----------|--------------------------------------------------------
+ IGG001  | Usage    | Error    | At most one injection method per declaring Node class.
+ IGG002  | Usage    | Error    | Invalid Inject method signature.

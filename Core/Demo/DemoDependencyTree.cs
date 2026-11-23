@@ -12,14 +12,22 @@ public partial class DemoDependencyTree : Tree
 	public string[] ColumnTitles
 	{
 		get => _titles;
-		set { _titles = value; ApplyColumns(); }
+		set
+		{
+			_titles = value;
+			ApplyColumns();
+		}
 	}
 
 	[Export]
 	public int[] MinimumColumnWidths
 	{
 		get => _widths;
-		set { _widths = value; ApplyColumns(); }
+		set
+		{
+			_widths = value;
+			ApplyColumns();
+		}
 	}
 
 	public override void _Ready() => ApplyColumns();

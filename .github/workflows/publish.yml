@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      id-token: write
     env:
       GODOT_VERSION: 4.6.1
     defaults:
@@ -32,7 +33,12 @@ jobs:
       - name: Validate release version
         env:
           RELEASE_TAG: ${{ github.ref_name }}
+          NUGET_USER: ${{ vars.NUGET_USER }}
         run: |
+          if [[ -z "$NUGET_USER" ]]; then
+            echo "::error::Set the NUGET_USER repository variable to your NuGet username."
+            exit 1
+          fi
           version="$(dotnet msbuild Core/Core.csproj -getProperty:Version)"
           if [[ "$RELEASE_TAG" != "v$version" ]]; then
             echo "::error::Release tag '$RELEASE_TAG' must match project version 'v$version'."
@@ -67,6 +73,9 @@ jobs:
             exit 1
           fi
 
+      - name: Pack method generator
+        run: dotnet pack Generator/Generator.csproj --configuration Release --output release
+
       - name: Package addon
         run: |
           python3 - <<'PY'
@@ -86,18 +95,34 @@ jobs:
               archive.write("LICENSE", str(destination / "LICENSE"))
           PY
 
+      - name: Log in to NuGet
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish method generator to NuGet
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: >-
+          dotnet nuget push "release/Injectra.Godot.Generation.${PACKAGE_VERSION}.nupkg"
+          --api-key "$NUGET_API_KEY"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           archive="release/Injectra.Godot-${PACKAGE_VERSION}.zip"
+          package="release/Injectra.Godot.Generation.${PACKAGE_VERSION}.nupkg"
           if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" "$archive" --clobber
+            gh release upload "$RELEASE_TAG" "$archive" "$package" --clobber
           else
             options=(--verify-tag --generate-notes --title "$RELEASE_TAG")
             if [[ "$PACKAGE_VERSION" == *-* ]]; then
               options+=(--prerelease)
             fi
-            gh release create "$RELEASE_TAG" "$archive" "${options[@]}"
+            gh release create "$RELEASE_TAG" "$archive" "$package" "${options[@]}"
           fi

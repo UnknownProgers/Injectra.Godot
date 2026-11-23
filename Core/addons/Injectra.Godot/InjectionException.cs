@@ -4,5 +4,7 @@ namespace Injectra.Godot;
 public sealed class InjectionException : Exception
 {
 	/// <summary>Creates an injection error with an optional underlying cause.</summary>
-	public InjectionException(string message, Exception? innerException = null) : base(message, innerException) { }
+	public InjectionException(string message, Exception? innerException = null) : base(message, innerException)
+	{
+	}
 }

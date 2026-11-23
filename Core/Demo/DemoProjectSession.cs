@@ -13,6 +13,7 @@ public sealed class DemoProjectSession : IDisposable, IInitializable, IFrameTick
 	public void Initialize() => IsInitialized = true;
 	public void FrameTick(double deltaTime) => Frames++;
 	public void PhysicsTick(double deltaTime) => PhysicsFrames++;
+
 	public void Dispose()
 	{
 		IsDisposed = true;

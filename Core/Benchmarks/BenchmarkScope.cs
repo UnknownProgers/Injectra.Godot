@@ -13,12 +13,13 @@ public partial class BenchmarkScope : InjectraScope
 		builder.Register<BenchmarkConsumer>(Lifetime.Transient);
 	}
 }
-
 public sealed class BenchmarkServiceB;
 public sealed class BenchmarkServiceC;
 
 // Match the core benchmark's 24-byte consumer: resolve all arguments, retain no fields.
 public sealed class BenchmarkConsumer
 {
-	public BenchmarkConsumer(BenchmarkDependency first, BenchmarkServiceB second, BenchmarkServiceC third) { }
+	public BenchmarkConsumer(BenchmarkDependency first, BenchmarkServiceB second, BenchmarkServiceC third)
+	{
+	}
 }

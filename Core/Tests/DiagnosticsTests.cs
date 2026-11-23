@@ -45,7 +45,11 @@ internal static class DiagnosticsTests
 	{
 		var calls = 0;
 		var builder = new ContainerBuilder();
-		builder.Register<PendingService>(_ => { calls++; return new PendingService(); }, Lifetime.Singleton);
+		builder.Register<PendingService>(_ =>
+		{
+			calls++;
+			return new PendingService();
+		}, Lifetime.Singleton);
 		builder.RegisterInstance(new ExistingService());
 		using var root = builder.Build();
 		using var child = root.CreateChild(local => local.Register<ChildService>(Lifetime.Singleton));

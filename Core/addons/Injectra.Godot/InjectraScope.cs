@@ -68,7 +68,9 @@ public partial class InjectraScope : Node
 
 	/// <summary>Adds code-based registrations after resource installers and before container construction.</summary>
 	/// <remarks>Override to invoke plain IInstaller implementations or register services directly.</remarks>
-	protected virtual void Configure(ContainerBuilder builder) { }
+	protected virtual void Configure(ContainerBuilder builder)
+	{
+	}
 
 	/// <summary>Configures lifecycle phases once on a root scope. Override to register additional phases.</summary>
 	/// <remarks>Call the base method to retain the Godot physics phase. Do not initialize or dispose the manager here.</remarks>
@@ -121,7 +123,10 @@ public partial class InjectraScope : Node
 		}
 		catch (Exception setupError)
 		{
-			try { Close(); }
+			try
+			{
+				Close();
+			}
 			catch (Exception cleanupError)
 			{
 				throw new AggregateException("Scope setup and container cleanup failed.", setupError, cleanupError);

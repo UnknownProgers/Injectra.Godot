@@ -15,27 +15,27 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void GeneratesDirectTypedCallsAndExecutesThem()
 	{
 		var result = Generate("""
-			using Injectra;
-			public sealed class Service;
-			public partial class Target : Godot.Node
-			{
-				public Service? Dependency { get; private set; }
-				[Inject] public void Construct(Service dependency) => Dependency = dependency;
-			}
-			public static class Entry
-			{
-				public static bool Run()
-				{
-					var service = new Service();
-					var builder = new ContainerBuilder();
-					builder.RegisterInstance(service);
-					using var container = builder.Build();
-					var target = new Target();
-					var generated = (Injectra.Godot.Generation.IGeneratedInjectable)target;
-					return generated.TryInject(target.GetType(), container) && ReferenceEquals(service, target.Dependency);
-				}
-			}
-			""");
+		                      using Injectra;
+		                      public sealed class Service;
+		                      public partial class Target : Godot.Node
+		                      {
+		                      	public Service? Dependency { get; private set; }
+		                      	[Inject] public void Construct(Service dependency) => Dependency = dependency;
+		                      }
+		                      public static class Entry
+		                      {
+		                      	public static bool Run()
+		                      	{
+		                      		var service = new Service();
+		                      		var builder = new ContainerBuilder();
+		                      		builder.RegisterInstance(service);
+		                      		using var container = builder.Build();
+		                      		var target = new Target();
+		                      		var generated = (Injectra.Godot.Generation.IGeneratedInjectable)target;
+		                      		return generated.TryInject(target.GetType(), container) && ReferenceEquals(service, target.Dependency);
+		                      	}
+		                      }
+		                      """);
 
 		Assert.Contains("resolver.Resolve<global::Service>()", result.Source);
 		Assert.Contains("((global::Target)this).@Construct(argument0)", result.Source);
@@ -48,25 +48,25 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void DynamicParameterUsesTheDeclaredObjectOverload()
 	{
 		var result = Generate("""
-			using Injectra;
-			public partial class Target : Godot.Node
-			{
-				public bool Correct;
-				[Inject] public void Construct(dynamic value) => Correct = true;
-				public void Construct(string value) => throw new System.Exception("Wrong overload");
-			}
-			public static class Entry
-			{
-				public static bool Run()
-				{
-					var builder = new ContainerBuilder();
-					builder.RegisterInstance<object>("text");
-					using var container = builder.Build();
-					var target = new Target();
-					return ((Injectra.Godot.Generation.IGeneratedInjectable)target).TryInject(target.GetType(), container) && target.Correct;
-				}
-			}
-			""");
+		                      using Injectra;
+		                      public partial class Target : Godot.Node
+		                      {
+		                      	public bool Correct;
+		                      	[Inject] public void Construct(dynamic value) => Correct = true;
+		                      	public void Construct(string value) => throw new System.Exception("Wrong overload");
+		                      }
+		                      public static class Entry
+		                      {
+		                      	public static bool Run()
+		                      	{
+		                      		var builder = new ContainerBuilder();
+		                      		builder.RegisterInstance<object>("text");
+		                      		using var container = builder.Build();
+		                      		var target = new Target();
+		                      		return ((Injectra.Godot.Generation.IGeneratedInjectable)target).TryInject(target.GetType(), container) && target.Correct;
+		                      	}
+		                      }
+		                      """);
 		Assert.Contains("resolver.Resolve<global::System.Object>()", result.Source);
 		Assert.Equal(true, Run(result.Compilation));
 	}
@@ -75,34 +75,34 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void ExceptionsPreserveResolutionAndUserCauses()
 	{
 		var result = Generate("""
-			using Injectra;
-			public sealed class Service;
-			public partial class Target : Godot.Node
-			{
-				[Inject] public void Construct(Service dependency) => throw new System.InvalidOperationException("User failure");
-			}
-			public static class Entry
-			{
-				public static bool Run()
-				{
-					var target = (Injectra.Godot.Generation.IGeneratedInjectable)new Target();
-					using var empty = new ContainerBuilder().Build();
-					try { target.TryInject(typeof(Target), empty); return false; }
-					catch (Injectra.Godot.InjectionException error)
-					{
-						if (error.InnerException is not ResolutionException || !error.Message.Contains("Construct")) return false;
-					}
-					var builder = new ContainerBuilder();
-					builder.RegisterInstance(new Service());
-					using var container = builder.Build();
-					try { target.TryInject(typeof(Target), container); return false; }
-					catch (Injectra.Godot.InjectionException error)
-					{
-						return error.InnerException is System.InvalidOperationException { Message: "User failure" };
-					}
-				}
-			}
-			""");
+		                      using Injectra;
+		                      public sealed class Service;
+		                      public partial class Target : Godot.Node
+		                      {
+		                      	[Inject] public void Construct(Service dependency) => throw new System.InvalidOperationException("User failure");
+		                      }
+		                      public static class Entry
+		                      {
+		                      	public static bool Run()
+		                      	{
+		                      		var target = (Injectra.Godot.Generation.IGeneratedInjectable)new Target();
+		                      		using var empty = new ContainerBuilder().Build();
+		                      		try { target.TryInject(typeof(Target), empty); return false; }
+		                      		catch (Injectra.Godot.InjectionException error)
+		                      		{
+		                      			if (error.InnerException is not ResolutionException || !error.Message.Contains("Construct")) return false;
+		                      		}
+		                      		var builder = new ContainerBuilder();
+		                      		builder.RegisterInstance(new Service());
+		                      		using var container = builder.Build();
+		                      		try { target.TryInject(typeof(Target), container); return false; }
+		                      		catch (Injectra.Godot.InjectionException error)
+		                      		{
+		                      			return error.InnerException is System.InvalidOperationException { Message: "User failure" };
+		                      		}
+		                      	}
+		                      }
+		                      """);
 		Assert.Equal(true, Run(result.Compilation));
 	}
 
@@ -110,23 +110,23 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void InheritedGeneratedImplementationRefusesAnUncoveredDerivedType()
 	{
 		var result = Generate("""
-			using Injectra;
-			public partial class Parent : Godot.Node
-			{
-				public int Calls;
-				[Inject] public void Construct() => Calls++;
-			}
-			public class Child : Parent { [Inject] public void Additional() { } }
-			public static class Entry
-			{
-				public static bool Run()
-				{
-					var child = new Child();
-					using var container = new ContainerBuilder().Build();
-					return !((Injectra.Godot.Generation.IGeneratedInjectable)child).TryInject(child.GetType(), container) && child.Calls == 0;
-				}
-			}
-			""");
+		                      using Injectra;
+		                      public partial class Parent : Godot.Node
+		                      {
+		                      	public int Calls;
+		                      	[Inject] public void Construct() => Calls++;
+		                      }
+		                      public class Child : Parent { [Inject] public void Additional() { } }
+		                      public static class Entry
+		                      {
+		                      	public static bool Run()
+		                      	{
+		                      		var child = new Child();
+		                      		using var container = new ContainerBuilder().Build();
+		                      		return !((Injectra.Godot.Generation.IGeneratedInjectable)child).TryInject(child.GetType(), container) && child.Calls == 0;
+		                      	}
+		                      }
+		                      """);
 		Assert.Single(result.Generated);
 		Assert.Equal(true, Run(result.Compilation));
 	}
@@ -139,9 +139,9 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void UnsupportedMethodsStayOnReflection(string method)
 	{
 		var result = Generate($$"""
-			using Injectra;
-			public partial class Target : Godot.Node { {{method}} }
-			""");
+		                        using Injectra;
+		                        public partial class Target : Godot.Node { {{method}} }
+		                        """);
 		Assert.Empty(result.Generated);
 	}
 
@@ -170,9 +170,9 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void UnrelatedAttributeDoesNotTriggerInjection()
 	{
 		var result = Generate("""
-			public sealed class InjectAttribute : System.Attribute;
-			public partial class Target : Godot.Node { [Inject] public void Construct() { } }
-			""");
+		                      public sealed class InjectAttribute : System.Attribute;
+		                      public partial class Target : Godot.Node { [Inject] public void Construct() { } }
+		                      """);
 		Assert.Single(result.Generated);
 		Assert.DoesNotContain(".@Construct(", result.Source);
 	}

@@ -38,7 +38,7 @@ public partial class ContainerBenchmarks : Node
 			var container = scope.Container;
 			var singleton = container.Resolve<BenchmarkDependency>();
 			if (!ReferenceEquals(singleton, container.Resolve<BenchmarkDependency>())
-				|| ReferenceEquals(container.Resolve<BenchmarkConsumer>(), container.Resolve<BenchmarkConsumer>()))
+			    || ReferenceEquals(container.Resolve<BenchmarkConsumer>(), container.Resolve<BenchmarkConsumer>()))
 				throw new InvalidOperationException("Unexpected service lifetime.");
 
 			using var scene = GD.Load<PackedScene>("res://Benchmarks/InjectionProbe.tscn");
@@ -47,10 +47,13 @@ public partial class ContainerBenchmarks : Node
 			try
 			{
 				if (!ReferenceEquals(probe.First, singleton) || !ReferenceEquals(probe.Second, singleton)
-					|| !ReferenceEquals(probe.Third, singleton) || probe.Calls != 1 || probe.IsInsideTree())
+				    || !ReferenceEquals(probe.Third, singleton) || probe.Calls != 1 || probe.IsInsideTree())
 					throw new InvalidOperationException("Scene factory injection check failed.");
 			}
-			finally { probe.Free(); }
+			finally
+			{
+				probe.Free();
+			}
 
 			GD.Print($"Runtime: {RuntimeInformation.FrameworkDescription}; Godot: {Engine.GetVersionInfo()["string"]}; {RuntimeInformation.ProcessArchitecture}");
 			GD.Print("7 samples; median; main thread. Scope includes node creation, addon registrations and lifecycle setup. Cleanup excluded.");
@@ -73,13 +76,23 @@ public partial class ContainerBenchmarks : Node
 				Measure("Scope create + prepare, 4 registrations", static () =>
 				{
 					var created = new BenchmarkScope();
-					try { created.Prepare(); }
-					catch { created.Free(); throw; }
+					try
+					{
+						created.Prepare();
+					}
+					catch
+					{
+						created.Free();
+						throw;
+					}
 					return created;
 				}, 256, static created => created.Free());
 			GD.Print("PASS: singleton/transient lifetimes and scene injection verified.");
 		}
-		finally { scope.Free(); }
+		finally
+		{
+			scope.Free();
+		}
 	}
 
 	internal static void Measure<T>(string name, Func<T> operation, int iterations, Action<T>? cleanup = null) where T : class

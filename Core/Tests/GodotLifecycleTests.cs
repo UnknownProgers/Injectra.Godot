@@ -76,7 +76,9 @@ internal static class GodotLifecycleTests
 			failed.Prepare(parentContainer: root.Container);
 			throw new InvalidOperationException("Expected injection failure.");
 		}
-		catch (InjectionException) { }
+		catch (InjectionException)
+		{
+		}
 		Check(failed.State.Initializations == 0 && failed.State.Disposals == 1, "Failed scope injection must dispose without initialization.");
 		failed.Free();
 		failed = new LifecycleScopeProbe { FailInitialization = true };
@@ -85,7 +87,9 @@ internal static class GodotLifecycleTests
 			failed.Prepare(parentContainer: root.Container);
 			throw new InvalidOperationException("Expected initialization failure.");
 		}
-		catch (InvalidOperationException error) when (error.Message == "Initialization failed.") { }
+		catch (InvalidOperationException error) when (error.Message == "Initialization failed.")
+		{
+		}
 		Check(failed.State.Disposals == 1, "Failed child initialization must clean up its container.");
 		failed.Free();
 		root._Process(0.1);

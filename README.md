@@ -53,6 +53,7 @@ Currently in alpha. Tested with Godot 4.6.1 .NET, .NET 11, and C# 15.
 
    ```sh
    dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
+   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.4-alpha.1
    dotnet build MyGame.csproj
    ```
 
@@ -351,7 +352,8 @@ Do not transfer nodes or resources to container ownership simply to match scope 
 ## Method generation
 
 `Injectra.Godot.Generation` is a compiler-only generator, developed in this repository's `Generator` project.
-The local Godot project references it as an analyzer. NuGet publication is not configured yet.
+The local Godot project references it as an analyzer. Games install the matching `Injectra.Godot.Generation` NuGet package; it contains no runtime library.
+Use `PrivateAssets="all"` on its PackageReference when packaging your own library.
 
 For a top-level, nongeneric partial Node class, it emits a complete inherited plan of supported injection methods.
 The existing scope and scene factory automatically use that path. No manual injector registration is required.
@@ -421,3 +423,21 @@ The addon and generator tests use the published Injectra NuGet package.
 ## License
 
 [MIT](LICENSE).
+
+## Publishing
+
+Tagged releases (`v<Version>` matching Directory.Build.props) run generator and
+Godot integration tests, pack the generator in Release, publish it to NuGet, and
+attach the analyzer package alongside the addon ZIP to the GitHub release.
+
+Configure the repository variable `NUGET_USER` with your NuGet username and a
+NuGet Trusted Publishing policy with these values:
+
+- Repository owner: `UnknownProgers`
+- Repository: `Injectra.Godot`
+- Workflow file: `publish.yml`
+- Environment: leave empty (this workflow does not declare an environment)
+- Package: `Injectra.Godot.Generation`
+- Scope: allow pushing new packages and package versions for the first release
+
+See [NuGet Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).

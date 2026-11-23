@@ -21,12 +21,15 @@ The runtime DI features do not require editor plugin activation. These sources c
 - Receive dependencies through public instance synchronous `void` methods marked `[Inject]`.
 - Receive `SceneFactory` through injection; it creates and injects scenes before `AddChild()`.
 - Add an `InjectraProjectScope` scene as an Autoload for persistent services. Place it before dependent Autoloads.
-- Child scopes inherit registrations, allow local overrides, and have their own factory. Without a project scope, a scene can run independently.
-- Root scopes automatically drive one lifecycle manager. Expose `IInitializable`, `IFrameTickable` (from `Injectra.Lifecycle`), and `IPhysicsTickable` (from `Injectra.Godot`) to enable callbacks.
+- Child scopes inherit registrations, allow local overrides, and have their own factory. Without a project scope, a scene can run
+  independently.
+- Root scopes automatically drive one lifecycle manager. Expose `IInitializable`, `IFrameTickable` (from `Injectra.Lifecycle`), and
+  `IPhysicsTickable` (from `Injectra.Godot`) to enable callbacks.
 
 Factory injection happens before `_EnterTree()` and `_Ready()`. Godot-loaded scopes prepare in their own `_EnterTree()`, before
 selected descendants' callbacks. Closing a scene scope disposes local owned services and preserves project services.
-The shared order is build, method injection, initialization, then ticks. Scopes created during a tick initialize after that traversal finishes.
+The shared order is build, method injection, initialization, then ticks. Scopes created during a tick initialize after that traversal
+finishes.
 `Initialize()` does not guarantee SceneTree readiness. Lifecycle participants must be singleton or instance registrations.
 
 See the [full documentation](https://github.com/UnknownProgers/Injectra.Godot#readme) for examples, initialization order,
@@ -55,7 +58,8 @@ Use `Instantiate<Player>(packedScene, parent)` when choosing between scenes shar
 
 The view is read-only. It shows container children, registration aliases, created/pending state, lifetimes,
 ownership, overrides, and constructor dependency sources. Created entries come first within each container.
-Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no attached scope path.
+Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no
+attached scope path.
 Container IDs are local to the snapshot.
 Factory dependencies are unknown, and transient instances are not tracked.
 

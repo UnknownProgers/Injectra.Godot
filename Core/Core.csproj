@@ -12,8 +12,8 @@
 		<ProjectReference Include="../Generator/Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="addons\Injectra.Godot\icons\icon.png" />
-	  <Content Include="addons\Injectra.Godot\icons\icon.png.import" />
-	  <Content Include="addons\Injectra.Godot\README.md" />
+		<Content Include="addons\Injectra.Godot\icons\icon.png"/>
+		<Content Include="addons\Injectra.Godot\icons\icon.png.import"/>
+		<Content Include="addons\Injectra.Godot\README.md"/>
 	</ItemGroup>
 </Project>

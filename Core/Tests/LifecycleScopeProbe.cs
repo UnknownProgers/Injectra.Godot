@@ -61,7 +61,6 @@ public partial class LifecycleScopeProbe : InjectraScope, IInitializable, IFrame
 		public void Dispose() => state.Disposals++;
 	}
 }
-
 public sealed class LifecycleProbeState
 {
 	public bool Injected { get; set; }

@@ -67,7 +67,7 @@ public sealed class MethodInjectionGenerator : IIncrementalGenerator
 			return ("", null, Diagnostic.Create(InvalidMethod, invalid.Location, ownMethods[0].ToDisplayString(), invalid.Reason));
 
 		if (!declaration.Modifiers.Any(SyntaxKind.PartialKeyword) || type.ContainingType is not null
-			|| type.IsGenericType || type.IsAbstract || type.IsStatic || type.IsFileLocal)
+		    || type.IsGenericType || type.IsAbstract || type.IsStatic || type.IsFileLocal)
 			return null;
 
 		var methods = new List<IMethodSymbol>();

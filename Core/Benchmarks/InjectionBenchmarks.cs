@@ -41,7 +41,7 @@ public partial class InjectionBenchmarks : Node
 		try
 		{
 			if (!((IGeneratedInjectable)generated).TryInject(generated.GetType(), container)
-				|| ((IGeneratedInjectable)reflection).TryInject(reflection.GetType(), container))
+			    || ((IGeneratedInjectable)reflection).TryInject(reflection.GetType(), container))
 				throw new InvalidOperationException("Expected generated and reflection paths respectively.");
 
 			GD.Print($"Runtime: {RuntimeInformation.FrameworkDescription}; Godot: {Engine.GetVersionInfo()["string"]}; {RuntimeInformation.ProcessArchitecture}");
@@ -61,9 +61,9 @@ public partial class InjectionBenchmarks : Node
 				Measure("Reflection / cold", () => new MethodInjector(container).Inject(reflection), ColdIterations);
 			}
 			if (!ReferenceEquals(generated.First, dependency) || !ReferenceEquals(generated.Second, dependency)
-				|| !ReferenceEquals(generated.Third, dependency) || !ReferenceEquals(reflection.First, dependency)
-				|| !ReferenceEquals(reflection.Second, dependency) || !ReferenceEquals(reflection.Third, dependency)
-				|| generated.Calls == 0 || reflection.Calls == 0)
+			    || !ReferenceEquals(generated.Third, dependency) || !ReferenceEquals(reflection.First, dependency)
+			    || !ReferenceEquals(reflection.Second, dependency) || !ReferenceEquals(reflection.Third, dependency)
+			    || generated.Calls == 0 || reflection.Calls == 0)
 				throw new InvalidOperationException("Injection correctness check failed.");
 			GD.Print("PASS: generated/reflection paths and injected dependencies verified.");
 		}

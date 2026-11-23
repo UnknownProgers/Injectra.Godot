@@ -109,10 +109,10 @@ internal sealed class MethodInjector
 				Visit(parent);
 
 			var declared = current.GetMethods(BindingFlags.DeclaredOnly
-				         | BindingFlags.Instance
-				         | BindingFlags.Static
-				         | BindingFlags.Public
-				         | BindingFlags.NonPublic)
+					| BindingFlags.Instance
+					| BindingFlags.Static
+					| BindingFlags.Public
+					| BindingFlags.NonPublic)
 				.Where(method => method.IsDefined(typeof(InjectAttribute), inherit: true)).ToArray();
 			if (declared.Length > 1)
 				throw new InjectionException($"Type {current} declares more than one injection method; declare at most one per class.");
@@ -125,8 +125,8 @@ internal sealed class MethodInjector
 				    || method.ReturnType != typeof(void)
 				    || method.ContainsGenericParameters
 				    || (method.CallingConvention & CallingConventions.VarArgs) != 0
-					|| method.IsDefined(typeof(AsyncStateMachineAttribute), inherit: false)
-					|| parameters.Any(parameter => parameter.ParameterType.IsByRef
+				    || method.IsDefined(typeof(AsyncStateMachineAttribute), inherit: false)
+				    || parameters.Any(parameter => parameter.ParameterType.IsByRef
 					    || parameter.ParameterType.IsByRefLike
 					    || parameter.ParameterType.IsPointer
 					    || parameter.ParameterType.IsFunctionPointer))

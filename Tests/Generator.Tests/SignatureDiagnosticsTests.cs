@@ -25,9 +25,9 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void InvalidSignatureProducesAnErrorAtTheOffendingMember(string method, string reason, string token)
 	{
 		var result = GenerateWithDiagnostics($$"""
-			using Injectra;
-			public partial class Target : Godot.Node { {{method}} }
-			""");
+		                                       using Injectra;
+		                                       public partial class Target : Godot.Node { {{method}} }
+		                                       """);
 
 		var diagnostic = Assert.Single(result.Diagnostics);
 		Assert.Equal("IGG002", diagnostic.Id);
@@ -45,8 +45,8 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void InvalidSignaturesAreReportedEvenWhenTheTargetCannotBeGenerated(string declaration)
 	{
 		var result = GenerateWithDiagnostics($$"""
-			{{declaration}} { [Injectra.Inject] private void Construct() { } }
-			""");
+		                                       {{declaration}} { [Injectra.Inject] private void Construct() { } }
+		                                       """);
 		Assert.Equal("IGG002", Assert.Single(result.Diagnostics).Id);
 		Assert.Empty(result.Generated);
 	}
@@ -55,11 +55,11 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void InvalidNestedNodeMethodIsReported()
 	{
 		var result = GenerateWithDiagnostics("""
-			public partial class Holder
-			{
-				public partial class Target : Godot.Node { [Injectra.Inject] private void Construct() { } }
-			}
-			""");
+		                                     public partial class Holder
+		                                     {
+		                                     	public partial class Target : Godot.Node { [Injectra.Inject] private void Construct() { } }
+		                                     }
+		                                     """);
 		Assert.Equal("IGG002", Assert.Single(result.Diagnostics).Id);
 	}
 
@@ -69,13 +69,13 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void InvalidOverrideIsReportedEvenWithoutARepeatedAttribute(string attribute)
 	{
 		var result = GenerateWithDiagnostics($$"""
-			using Injectra;
-			public partial class Base : Godot.Node { [Inject] public virtual void Construct() { } }
-			public partial class Child : Base
-			{
-				{{attribute}} public override async void Construct() => await System.Threading.Tasks.Task.Yield();
-			}
-			""");
+		                                       using Injectra;
+		                                       public partial class Base : Godot.Node { [Inject] public virtual void Construct() { } }
+		                                       public partial class Child : Base
+		                                       {
+		                                       	{{attribute}} public override async void Construct() => await System.Threading.Tasks.Task.Yield();
+		                                       }
+		                                       """);
 		var diagnostic = Assert.Single(result.Diagnostics);
 		Assert.Equal("IGG002", diagnostic.Id);
 		Assert.Contains("Child.Construct", diagnostic.GetMessage());
@@ -86,13 +86,13 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void PartialImplementationIsCheckedForAsyncVoid()
 	{
 		var result = GenerateWithDiagnostics("""
-			using Injectra;
-			public partial class Target : Godot.Node
-			{
-				[Inject] public partial void Construct();
-				public async partial void Construct() => await System.Threading.Tasks.Task.Yield();
-			}
-			""");
+		                                     using Injectra;
+		                                     public partial class Target : Godot.Node
+		                                     {
+		                                     	[Inject] public partial void Construct();
+		                                     	public async partial void Construct() => await System.Threading.Tasks.Task.Yield();
+		                                     }
+		                                     """);
 		var diagnostic = Assert.Single(result.Diagnostics);
 		Assert.Equal("IGG002", diagnostic.Id);
 		Assert.Contains("synchronous", diagnostic.GetMessage());
@@ -120,12 +120,12 @@ public sealed partial class MethodInjectionGeneratorTests
 	public void UnmarkedMethodsAreNotValidatedAsInjectionMethods()
 	{
 		var result = Generate("""
-			public partial class Target : Godot.Node
-			{
-				[Injectra.Inject] public void Construct() { }
-				private static int Helper() => 1;
-			}
-			""");
+		                      public partial class Target : Godot.Node
+		                      {
+		                      	[Injectra.Inject] public void Construct() { }
+		                      	private static int Helper() => 1;
+		                      }
+		                      """);
 		Assert.Single(result.Generated);
 	}
 }

@@ -20,10 +20,13 @@ internal static partial class ReflectionFallbackTests
 			injector.Inject(node);
 			injector.Inject(node);
 			if (!ReferenceEquals(node.Dependency, dependency)
-				|| !node.Calls.SequenceEqual(["Override", "Leaf", "Override", "Leaf"]))
+			    || !node.Calls.SequenceEqual(["Override", "Leaf", "Override", "Leaf"]))
 				throw new InvalidOperationException("Fallback must preserve user ancestry, overrides, order and cached repeated injection above Node2D.");
 		}
-		finally { node.Free(); }
+		finally
+		{
+			node.Free();
+		}
 		GD.Print("PASS: reflection fallback preserves user inheritance above Godot framework classes.");
 	}
 

@@ -16,9 +16,9 @@ public partial class SceneRegistry : Resource
 		foreach (var entry in Entries)
 		{
 			if (entry is null || !IsInstanceValid(entry)
-				|| entry.Script is null || !IsInstanceValid(entry.Script)
-				|| string.IsNullOrEmpty(entry.Script.ResourcePath)
-				|| entry.Scene is null || !IsInstanceValid(entry.Scene) || !entry.Scene.CanInstantiate())
+			    || entry.Script is null || !IsInstanceValid(entry.Script)
+			    || string.IsNullOrEmpty(entry.Script.ResourcePath)
+			    || entry.Scene is null || !IsInstanceValid(entry.Scene) || !entry.Scene.CanInstantiate())
 				throw new InvalidOperationException("A scene registration requires a saved C# script and an instantiable packed scene.");
 
 			if (!scenes.TryAdd(entry.Script.ResourcePath, entry.Scene))

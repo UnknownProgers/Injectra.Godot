@@ -30,15 +30,29 @@ internal static partial class ScopePreparationMeasurements
 		ContainerBenchmarks.Measure("Full scope, injection discovery bypassed", static () =>
 		{
 			var scope = new NoInjectionBenchmarkScope();
-			try { scope.Prepare(); }
-			catch { scope.Free(); throw; }
+			try
+			{
+				scope.Prepare();
+			}
+			catch
+			{
+				scope.Free();
+				throw;
+			}
 			return scope;
 		}, 256, static scope => scope.Free());
 		ContainerBenchmarks.Measure("Full scope, current implementation", static () =>
 		{
 			var scope = new BenchmarkScope();
-			try { scope.Prepare(); }
-			catch { scope.Free(); throw; }
+			try
+			{
+				scope.Prepare();
+			}
+			catch
+			{
+				scope.Free();
+				throw;
+			}
 			return scope;
 		}, 256, static scope => scope.Free());
 	}

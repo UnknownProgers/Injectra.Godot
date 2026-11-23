@@ -137,8 +137,14 @@ internal static class ProjectScopeTests
 
 	private static void Throws<T>(Action action) where T : Exception
 	{
-		try { action(); }
-		catch (T) { return; }
+		try
+		{
+			action();
+		}
+		catch (T)
+		{
+			return;
+		}
 		throw new InvalidOperationException($"Expected {typeof(T).Name}.");
 	}
 

@@ -52,7 +52,7 @@ public partial class DiagnosticsBridge : Node
 		void CollectScopes(Node node)
 		{
 			if (node is InjectraScope { PreparedContainer: { } container } scope
-				&& scope.DiagnosticsRootScope?.PreparedContainer is { } rootContainer)
+			    && scope.DiagnosticsRootScope?.PreparedContainer is { } rootContainer)
 			{
 				if (!paths.TryGetValue(rootContainer, out var rootPaths))
 					paths.Add(rootContainer, rootPaths = []);

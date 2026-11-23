@@ -163,8 +163,14 @@ internal static class InjectionTests
 
 	private static T Throws<T>(Action action) where T : Exception
 	{
-		try { action(); }
-		catch (T error) { return error; }
+		try
+		{
+			action();
+		}
+		catch (T error)
+		{
+			return error;
+		}
 		throw new InvalidOperationException($"Expected {typeof(T).Name}.");
 	}
 
@@ -182,7 +188,12 @@ internal static class InjectionTests
 	private sealed class DerivedTarget : BaseTarget
 	{
 		public InjectionDependency? Dependency { get; private set; }
-		[Inject] public void Construct(InjectionDependency dependency) { Dependency = dependency; Calls.Add("Derived"); }
+
+		[Inject] public void Construct(InjectionDependency dependency)
+		{
+			Dependency = dependency;
+			Calls.Add("Derived");
+		}
 	}
 	private class VirtualTarget
 	{
@@ -220,21 +231,63 @@ internal static class InjectionTests
 		[Inject] public void Second() => Calls++;
 		public void Unmarked() => throw new InvalidOperationException();
 	}
-	private sealed class PrivateTarget { [Inject] private void Construct() { } }
+	private sealed class PrivateTarget
+	{
+		[Inject] private void Construct()
+		{
+		}
+	}
 	private sealed class PartiallyInvalidTarget
 	{
 		public int Calls { get; private set; }
 		[Inject] public void Valid() => Calls++;
-		[Inject] private void Invalid() { }
+
+		[Inject] private void Invalid()
+		{
+		}
 	}
-	private sealed class StaticTarget { [Inject] public static void Construct() { } }
-	private sealed class ReturnTarget { [Inject] public int Construct() => 0; }
-	private sealed class GenericTarget { [Inject] public void Construct<T>() { } }
-	private sealed class RefTarget { [Inject] public void Construct(ref int value) { } }
-	private sealed class AsyncTarget { [Inject] public async void Construct() => await Task.Yield(); }
-	private sealed class VarargTarget { [Inject] public void Construct(__arglist) { } }
-	private sealed class MissingTarget { [Inject] public void Construct(Unregistered dependency) { } }
-	private sealed class ThrowingTarget { [Inject] public void Construct() => throw new InvalidOperationException("User error"); }
+	private sealed class StaticTarget
+	{
+		[Inject] public static void Construct()
+		{
+		}
+	}
+	private sealed class ReturnTarget
+	{
+		[Inject] public int Construct() => 0;
+	}
+	private sealed class GenericTarget
+	{
+		[Inject] public void Construct<T>()
+		{
+		}
+	}
+	private sealed class RefTarget
+	{
+		[Inject] public void Construct(ref int value)
+		{
+		}
+	}
+	private sealed class AsyncTarget
+	{
+		[Inject] public async void Construct() => await Task.Yield();
+	}
+	private sealed class VarargTarget
+	{
+		[Inject] public void Construct(__arglist)
+		{
+		}
+	}
+	private sealed class MissingTarget
+	{
+		[Inject] public void Construct(Unregistered dependency)
+		{
+		}
+	}
+	private sealed class ThrowingTarget
+	{
+		[Inject] public void Construct() => throw new InvalidOperationException("User error");
+	}
 	private sealed class Unregistered;
 	private sealed record ResourceHolder(InjectionResource Resource);
 }
