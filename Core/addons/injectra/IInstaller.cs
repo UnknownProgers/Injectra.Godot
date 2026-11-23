@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Injectra.Godot;
 
 /// <summary>Configures service registrations before a scope builds its container.</summary>

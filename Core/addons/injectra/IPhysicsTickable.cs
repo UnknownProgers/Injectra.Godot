@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Injectra.Godot;
 
 /// <summary>Receives fixed-step updates from the root scope's Godot physics callback.</summary>

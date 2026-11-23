@@ -1,3 +1,5 @@
+#nullable enable
+
 #if TOOLS
 using System.Collections.Generic;
 using Godot;

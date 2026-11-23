@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Injectra.Godot;
 
 /// <summary>Determines which nodes receive method injection when a scene is instantiated.</summary>

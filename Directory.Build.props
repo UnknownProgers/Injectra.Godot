@@ -5,6 +5,6 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<Deterministic>true</Deterministic>
-		<Version>0.9.7-alpha.2</Version>
+		<Version>0.9.7-alpha.3</Version>
 	</PropertyGroup>
 </Project>
