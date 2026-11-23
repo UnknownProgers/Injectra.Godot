@@ -225,3 +225,59 @@ BenchmarkScope measurements are the primary comparison.
 
 Validation: 58 generator tests and the native Godot integration suite passed,
 including inheritance, scene creation, lifecycle and diagnostics.
+
+## Lazy reflection cache and SceneFactory baseline — 2026-11-23
+
+MethodInjector now creates its reflection dictionary only upon the first
+successful fallback plan preparation. Generated-only injectors allocate no
+reflection cache. Runtime integration tests passed, including reflection,
+generation, invalid signatures, scene creation and failure cleanup.
+
+| Control | Previous managed B/op | Current managed B/op |
+|---|---:|---:|
+| Fresh injector, empty generated injection | 112 | 32 |
+| Full scope | 5,656 | 5,576 |
+
+Fresh empty injection measured 15.55 ns median; full scope measured 2,475.54 ns
+in the preparation group and 3,173.33 ns in the full suite. This does not
+establish a full-scope timing improvement beyond the observed sample variation.
+The reproducible improvement is 80 fewer allocated bytes per injector.
+
+The `factory` group now includes a direct PackedScene.Instantiate<T>() control
+using the same loaded scene, main thread, delegate/retention harness and cleanup
+outside measurement. No DI or injection is performed by that control.
+
+| Operation | Run 1 median ns/op | Run 2 median ns/op | Managed B/op |
+|---|---:|---:|---:|
+| PackedScene instantiate, no DI | 1,477.74 | 1,449.00 | 320 |
+| SceneFactory instantiate + generated root injection | 1,601.43 | 1,584.71 | 320 |
+
+The difference between medians is approximately 124–136 ns, with no additional
+managed bytes per operation in this warmed single-node fixture. Differences of
+independent medians are an estimate, not a separately timed overhead or a
+statistical confidence bound. Node creation accounts for most of the total;
+these results do not cover tree traversal, parent attachment or child scopes.
+
+## Reflection framework boundary — 2026-11-23
+
+Fallback discovery now stops at System.Object or a class defined in the actual
+GodotObject assembly. It does not skip user classes by namespace or name, and
+still traverses custom ancestors, including those from other assemblies, before
+that boundary. Godot framework classes cannot declare Injectra injection methods.
+
+Same injection fixture, published Core package and measurement settings:
+
+| Case | Previous median ns/op | Current median ns/op | Previous managed B/op | Current managed B/op |
+|---|---:|---:|---:|---:|
+| Reflection / cold | 31,206.12 | 5,924.98 | 12,168 | 6,088 |
+| Reflection / warm | 68.63 | 68.03 | 48 | 48 |
+
+A separate cold-only run measured 5,620.19 ns with the same 6,088 bytes. Cold
+fallback is about 5.3–5.6 times faster in this fixture with half the managed
+allocation. The previously implemented lazy cache does not change fallback's
+allocation count because fallback still creates that dictionary.
+
+Native integration tests passed. A new nested Node2D-derived test explicitly
+uses reflection, checks an inherited virtual injection override and a leaf
+injection method in base-first order, and repeats injection through the cached
+plan. Existing invalid-method and explicit Resource injection tests still pass.

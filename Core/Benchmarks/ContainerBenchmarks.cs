@@ -63,8 +63,12 @@ public partial class ContainerBenchmarks : Node
 			if (selected is "all" or "transient")
 				Measure("Transient resolve, 3 singleton deps", () => container.Resolve(typeof(BenchmarkConsumer)), 100_000);
 			if (selected is "all" or "factory")
+			{
+				Measure("PackedScene instantiate, no DI", () => scene.Instantiate<InjectionProbe>(), 512,
+					static node => node.Free());
 				Measure("SceneFactory instantiate + inject root", () => factory.Instantiate<InjectionProbe>(scene), 512,
 					static node => node.Free());
+			}
 			if (selected is "all" or "build")
 				Measure("Scope create + prepare, 4 registrations", static () =>
 				{

@@ -9,7 +9,7 @@ namespace Injectra.Godot;
 internal sealed class MethodInjector
 {
 	private readonly IResolver _resolver;
-	private readonly Dictionary<Type, InjectionMethod[]> _methods = [];
+	private Dictionary<Type, InjectionMethod[]>? _methods;
 
 	/// <summary>Creates an injector bound to the supplied resolver.</summary>
 	/// <exception cref="ArgumentNullException">The resolver is null.</exception>
@@ -39,10 +39,10 @@ internal sealed class MethodInjector
 		if (target is IGeneratedInjectable generated && generated.TryInject(type, _resolver))
 			return;
 
-		if (!_methods.TryGetValue(type, out var methods))
+		if (_methods is null || !_methods.TryGetValue(type, out var methods))
 		{
 			methods = Prepare(type);
-			_methods.Add(type, methods);
+			(_methods ??= []).Add(type, methods);
 		}
 
 		foreach (var injection in methods)
@@ -101,6 +101,10 @@ internal sealed class MethodInjector
 
 		void Visit(Type current)
 		{
+			// Godot's own classes cannot declare Injectra injection methods.
+			if (current == typeof(object) || current.Assembly == typeof(GodotObject).Assembly)
+				return;
+
 			if (current.BaseType is { } parent)
 				Visit(parent);
 
