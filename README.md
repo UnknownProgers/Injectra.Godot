@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/UnknownProgers/Injectra.Godot/releases">
-    <img src="https://img.shields.io/github/v/release/UnknownProgers/Injectra.Godot?include_prereleases&amp;label=release" alt="Release">
+	  <img src="https://img.shields.io/github/v/release/UnknownProgers/Injectra.Godot?include_prereleases&amp;label=release" alt="Release">
   </a>
   <a href="https://www.nuget.org/packages/Injectra.Godot.Generation/">
     <img src="https://img.shields.io/nuget/v/Injectra.Godot.Generation?label=nuget">
