@@ -16,7 +16,7 @@ public partial class InjectraDebuggerPlugin : EditorDebuggerPlugin
 	public override void _SetupSession(int sessionId)
 	{
 		var session = GetSession(sessionId);
-		using var scene = GD.Load<PackedScene>("res://addons/Injectra.Godot/Diagnostics/DiagnosticsPanel.tscn");
+		using var scene = GD.Load<PackedScene>("res://addons/injectra/Diagnostics/DiagnosticsPanel.tscn");
 		var panel = scene.Instantiate<DiagnosticsPanel>();
 		_panels[sessionId] = panel;
 		panel.RefreshRequested = () => session.SendMessage("injectra:refresh", []);

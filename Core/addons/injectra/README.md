@@ -4,7 +4,7 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 
 ## Installation
 
-1. Extract the release into your project so this directory is `addons/Injectra.Godot/`.
+1. Extract the release into your project so this directory is `addons/injectra/`.
 2. Add the container and method generator packages to your game, then build:
 
    ```sh
@@ -81,8 +81,10 @@ The generator emits complete inherited plans for top-level, nongeneric partial N
 Each class may declare at most one injection method; overrides inherit `[Inject]` and may repeat it without changing calls.
 An override plus another local injection method is a duplicate in either case.
 Duplicate declarations produce `IGG001` at compile time, or `InjectionException` before any calls on reflection fallback.
-Scopes and scene factories select generated plans automatically. Types without injection methods get empty plans, avoiding reflection discovery.
-Each generated plan accepts only its exact runtime type. Valid nested/generic targets and custom external bases retain cached reflection fallback.
+Scopes and scene factories select generated plans automatically. Types without injection methods get empty plans, avoiding reflection
+discovery.
+Each generated plan accepts only its exact runtime type. Valid nested/generic targets and custom external bases retain cached reflection
+fallback.
 
 `IGG002` reports invalid injection signatures during compilation, including invalid overrides.
 Methods must be public instance synchronous void methods, without method type parameters, by-reference,

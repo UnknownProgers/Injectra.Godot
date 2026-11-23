@@ -14,7 +14,7 @@ public partial class InjectraEditorPlugin : EditorPlugin
 		_debugger = new InjectraDebuggerPlugin();
 		AddDebuggerPlugin(_debugger);
 		if (!ProjectSettings.HasSetting("autoload/InjectraDiagnostics"))
-			AddAutoloadSingleton("InjectraDiagnostics", "res://addons/Injectra.Godot/Diagnostics/DiagnosticsBridge.cs");
+			AddAutoloadSingleton("InjectraDiagnostics", "res://addons/injectra/Diagnostics/DiagnosticsBridge.cs");
 	}
 
 	public override void _ExitTree()

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://r3junvw8keg4"
-path="res://.godot/imported/scope.svg-4ead974f1d1b47dc29a78bd5b53968b6.ctex"
+uid="uid://ctb4ojuibxxsi"
+path="res://.godot/imported/icon.png-de5d2bd5cffd14628923379b22953c3f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Injectra.Godot/icons/scope.svg"
-dest_files=["res://.godot/imported/scope.svg-4ead974f1d1b47dc29a78bd5b53968b6.ctex"]
+source_file="res://addons/injectra/icons/icon.png"
+dest_files=["res://.godot/imported/icon.png-de5d2bd5cffd14628923379b22953c3f.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

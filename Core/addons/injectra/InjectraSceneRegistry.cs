@@ -6,7 +6,7 @@ namespace Injectra.Godot;
 
 /// <summary>Inspector-authored scene mappings, snapshotted when a scope is prepared.</summary>
 [GlobalClass]
-[Icon("res://addons/Injectra.Godot/icons/scene-registry.svg")]
+[Icon("res://addons/injectra/icons/scene-registry.svg")]
 public partial class InjectraSceneRegistry : Resource
 {
 	/// <summary>Local mappings. Duplicate script keys are rejected during preparation.</summary>

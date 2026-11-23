@@ -6,7 +6,7 @@ namespace Injectra.Godot;
 /// <summary>Provides the application container. Add its scene as an Autoload before other dependent Autoloads.</summary>
 /// <remarks>Only one project scope can be active. Ordinary scopes without an explicit parent inherit its container.</remarks>
 [GlobalClass]
-[Icon("res://addons/Injectra.Godot/icons/scope.svg")]
+[Icon("res://addons/injectra/icons/scope.svg")]
 public partial class InjectraProjectScope : InjectraScope
 {
 	internal static InjectraProjectScope? Active { get; private set; }

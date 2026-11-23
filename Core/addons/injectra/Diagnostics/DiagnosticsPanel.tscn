@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://addons/Injectra.Godot/Diagnostics/DiagnosticsPanel.cs" id="1_panel"]
+[ext_resource type="Script" path="res://addons/injectra/Diagnostics/DiagnosticsPanel.cs" id="1_panel"]
 
 [node name="Injectra" type="VBoxContainer" node_paths=PackedStringArray("Entries", "Details", "Status", "RefreshButton", "CopyButton")]
 custom_minimum_size = Vector2(800, 260)

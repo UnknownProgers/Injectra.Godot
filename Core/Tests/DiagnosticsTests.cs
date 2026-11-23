@@ -119,7 +119,7 @@ internal static class DiagnosticsTests
 		var builder = new ContainerBuilder();
 		builder.RegisterInstance(new ExistingService());
 		using var container = builder.Build();
-		using var scene = GD.Load<PackedScene>("res://addons/Injectra.Godot/Diagnostics/DiagnosticsPanel.tscn");
+		using var scene = GD.Load<PackedScene>("res://addons/injectra/Diagnostics/DiagnosticsPanel.tscn");
 		var panel = scene.Instantiate<DiagnosticsPanel>();
 		parent.AddChild(panel);
 		var requests = 0;
@@ -149,7 +149,7 @@ internal static class DiagnosticsTests
 
 	private static void EmptySnapshotIsHandled(Node parent)
 	{
-		using var scene = GD.Load<PackedScene>("res://addons/Injectra.Godot/Diagnostics/DiagnosticsPanel.tscn");
+		using var scene = GD.Load<PackedScene>("res://addons/injectra/Diagnostics/DiagnosticsPanel.tscn");
 		var panel = scene.Instantiate<DiagnosticsPanel>();
 		parent.AddChild(panel);
 		panel.SetActive(true);

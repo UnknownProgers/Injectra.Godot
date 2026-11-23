@@ -14,7 +14,7 @@ namespace Injectra.Godot;
 /// Factory-created scopes use the factory's container as their explicit parent. A root scope drives one lifecycle for the hierarchy.
 /// </remarks>
 [GlobalClass]
-[Icon("res://addons/Injectra.Godot/icons/scope.svg")]
+[Icon("res://addons/injectra/icons/scope.svg")]
 public partial class InjectraScope : Node
 {
 	private Container? _container;

@@ -11,8 +11,8 @@
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all"/>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0"/>
 		<ProjectReference Include="../../Generator/Generator.csproj"/>
-		<None Include="../../Core/addons/Injectra.Godot/Generation/IGeneratedInjectable.cs" Link="RuntimeSources/IGeneratedInjectable.cs" CopyToOutputDirectory="PreserveNewest"/>
-		<None Include="../../Core/addons/Injectra.Godot/InjectionException.cs" Link="RuntimeSources/InjectionException.cs" CopyToOutputDirectory="PreserveNewest"/>
+		<None Include="../../Core/addons/injectra/Generation/IGeneratedInjectable.cs" Link="RuntimeSources/IGeneratedInjectable.cs" CopyToOutputDirectory="PreserveNewest"/>
+		<None Include="../../Core/addons/injectra/InjectionException.cs" Link="RuntimeSources/InjectionException.cs" CopyToOutputDirectory="PreserveNewest"/>
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>

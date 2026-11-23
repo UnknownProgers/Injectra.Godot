@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Core/addons/Injectra.Godot/icons/icon.png" alt="Injectra.Godot" width="120"/>
+  <img src="Core/addons/injectra/icons/icon.png" alt="Injectra.Godot" width="120"/>
 </p>
 
 <h1 align="center">Injectra.Godot</h1>
@@ -36,7 +36,7 @@ This addon is for C# projects using the .NET edition of Godot.
 ## Install
 
 1. Download `Injectra.Godot-<version>.zip` from [GitHub Releases](https://github.com/UnknownProgers/Injectra.Godot/releases).
-2. Extract it into your game so the directory is **`res://addons/Injectra.Godot/`**.
+2. Extract it into your game so the directory is **`res://addons/injectra/`**.
 3. Add both NuGet packages to your game's `.csproj`:
 
 ```xml
@@ -47,6 +47,9 @@ This addon is for C# projects using the .NET edition of Godot.
 ```
 
 4. Run `dotnet build MyGame.csproj`, then return to Godot.
+
+When upgrading from the old addon directory, disable Injectra Diagnostics first and remove the old addon folder.
+Install the new `addons/injectra` directory, rebuild, then enable diagnostics again. Update any manually saved script paths.
 
 Use the generator version matching your addon release. `Injectra` supplies the container and constructor generator;
 `Injectra.Godot.Generation` supplies the compiler generator for `[Inject]` methods on nodes.

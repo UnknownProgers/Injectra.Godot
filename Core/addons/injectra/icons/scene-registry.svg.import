@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dd18ebqg4g7ba"
-path="res://.godot/imported/scene-registration.svg-95b3850f1adbb55bea55b1d616a8e4a9.ctex"
+uid="uid://b7chrrd8dud2a"
+path="res://.godot/imported/scene-registry.svg-1fc2031fed9fd039cbe7b4ca9f44b153.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Injectra.Godot/icons/scene-registration.svg"
-dest_files=["res://.godot/imported/scene-registration.svg-95b3850f1adbb55bea55b1d616a8e4a9.ctex"]
+source_file="res://addons/injectra/icons/scene-registry.svg"
+dest_files=["res://.godot/imported/scene-registry.svg-1fc2031fed9fd039cbe7b4ca9f44b153.ctex"]
 
 [params]
 
