@@ -22,12 +22,13 @@ internal sealed class MethodInjector
 	/// <summary>Invokes injection methods on one object, with base methods before derived methods.</summary>
 	/// <remarks>
 	/// Only public instance synchronous void methods without generic or by-reference parameters are supported.
-	/// Overrides run once. Order within a declaring type is unspecified. Every call performs injection again.
+	/// Each declaring class may have at most one injection method. Overrides run once, with or without a repeated attribute.
+	/// Every call performs injection again.
 	/// Resources referenced by the object are not traversed. Earlier method calls are not rolled back on failure.
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">The target is null.</exception>
 	/// <exception cref="ObjectDisposedException">The target is a freed Godot object.</exception>
-	/// <exception cref="InjectionException">A marked method is unsupported, a dependency cannot be resolved, or a method throws.</exception>
+	/// <exception cref="InjectionException">A class declares multiple injection methods, a method is unsupported, a dependency cannot be resolved, or a method throws.</exception>
 	public void Inject(object target)
 	{
 		ArgumentNullException.ThrowIfNull(target);
@@ -103,15 +104,17 @@ internal sealed class MethodInjector
 			if (current.BaseType is { } parent)
 				Visit(parent);
 
-			foreach (var method in current.GetMethods(BindingFlags.DeclaredOnly
+			var declared = current.GetMethods(BindingFlags.DeclaredOnly
 				         | BindingFlags.Instance
 				         | BindingFlags.Static
 				         | BindingFlags.Public
-				         | BindingFlags.NonPublic))
-			{
-				if (!method.IsDefined(typeof(InjectAttribute), inherit: true))
-					continue;
+				         | BindingFlags.NonPublic)
+				.Where(method => method.IsDefined(typeof(InjectAttribute), inherit: true)).ToArray();
+			if (declared.Length > 1)
+				throw new InjectionException($"Type {current} declares more than one injection method; declare at most one per class.");
 
+			foreach (var method in declared)
+			{
 				var parameters = method.GetParameters();
 				if (!method.IsPublic
 				    || method.IsStatic

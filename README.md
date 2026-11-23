@@ -249,8 +249,13 @@ Installers configure registrations: do not spawn scenes, build the builder, or s
 `[Inject]` belongs to `Injectra`. Supported methods are public instance synchronous `void` methods, without generic parameters,
 `ref`, `out`, `in`, pointers, function pointers, or ref-struct arguments.
 
-Multiple marked methods are allowed. Base methods run before derived methods; virtual overrides run once.
-Method order within one declaring type is unspecified. Fields, properties, static methods, and async injection are unsupported.
+Each declaring class may have at most one injection method. Different inheritance levels may each declare one.
+Overrides inherit `[Inject]`; repeating the attribute is allowed and does not add another call.
+An override plus another injection method in the same class is still a duplicate, with or without the repeated attribute.
+Duplicate methods produce compiler error `IGG001` for Node classes when the generator is present;
+reflection fallback throws `InjectionException` before invoking any injection methods.
+Calls follow base-to-derived slot order. A virtual override replaces its base slot and runs once at that slot's position.
+Fields, properties, static methods, and async injection are unsupported.
 Plain C# services should normally use constructor injection.
 
 An attribute alone does not make an arbitrary node participate: a scope or factory must select it.
@@ -340,16 +345,17 @@ Closing a level preserves project services. Closing the project container also d
 A scope that left the tree is permanently closed: create a new instance instead of re-entering it.
 Do not transfer nodes or resources to container ownership simply to match scope lifetime; native Godot ownership still applies.
 
-## Method generation (first stage)
+## Method generation
 
 `Injectra.Godot.Generation` is a compiler-only generator, developed in this repository's `Generator` project.
 The local Godot project references it as an analyzer. NuGet publication is not configured yet.
 
-For a top-level, nongeneric partial Node class with one supported local `[Inject]` method, it emits a direct C# call.
+For a top-level, nongeneric partial Node class, it emits a complete inherited plan of supported injection methods.
 The existing scope and scene factory automatically use that path. No manual injector registration is required.
 Generated code resolves arguments through the current container, preserving child overrides and error causes.
 
-Custom inherited injection plans, multiple injection methods, nested and generic classes remain on reflection in this first stage.
+Generated plans include inherited methods, virtual overrides, hidden methods and concrete leaves without local attributes.
+Nested and generic target classes, custom external base classes and unsupported method signatures retain reflection fallback.
 An inherited generated implementation refuses an uncovered runtime type so it cannot silently skip derived injection methods.
 The addon remains usable without the generator. Resources and ordinary C# objects keep the existing reflection path;
 ordinary services should normally use constructor injection.
@@ -381,7 +387,7 @@ The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
 ## Current boundaries
 
 - Main-thread use only.
-- Method generation currently covers top-level, nongeneric partial Node classes with one local public injection method. Inheritance and multiple injection methods use reflection fallback.
+- Method generation covers top-level, nongeneric partial Node classes and supported local inheritance chains. Custom external bases and unsupported target shapes use reflection fallback.
 - No separate addon NuGet package. The editor plugin is optional and used only for diagnostics.
 
 ## Demo and development

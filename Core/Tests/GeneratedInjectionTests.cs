@@ -9,9 +9,10 @@ internal static class GeneratedInjectionTests
 		GeneratedCallsUseTypedResolution();
 		GeneratedCallsUseChildOverrides();
 		FailuresPreserveTheirCauses();
-		DerivedNodesFallBackWithoutSkippingMethods();
+		DerivedNodesGenerateACompletePlan();
+		OverridesRunOnceWithOrWithoutRepeatedAttribute();
 		InjectionNode.Created.Clear();
-		global::Godot.GD.Print("PASS: generated method injection, typed resolution, child overrides, errors and inherited fallback.");
+		global::Godot.GD.Print("PASS: generated method injection, typed resolution, child overrides, errors and inherited plans.");
 	}
 
 	private static void GeneratedCallsUseTypedResolution()
@@ -63,20 +64,32 @@ internal static class GeneratedInjectionTests
 		node.Free();
 	}
 
-	private static void DerivedNodesFallBackWithoutSkippingMethods()
+	private static void DerivedNodesGenerateACompletePlan()
 	{
 		var dependency = new InjectionDependency();
-		var builder = new ContainerBuilder();
-		builder.RegisterInstance(dependency);
-		using var container = builder.Build();
+		var resolver = new TypedResolver(dependency);
 		var node = new GeneratedDerivedProbe();
 
-		Check(!((IGeneratedInjectable)node).TryInject(node.GetType(), container), "An inherited generated plan must refuse an uncovered runtime type.");
-		new MethodInjector(container).Inject(node);
+		new MethodInjector(resolver).Inject(node);
 
 		Check(ReferenceEquals(node.Dependency, dependency) && node.AdditionalCalls == 1,
-			"Reflection fallback must execute both base and derived injection methods once.");
+			"The generated derived plan must execute both base and derived injection methods once.");
 		node.Free();
+	}
+
+	private static void OverridesRunOnceWithOrWithoutRepeatedAttribute()
+	{
+		var dependency = new InjectionDependency();
+		var resolver = new TypedResolver(dependency);
+		var injector = new MethodInjector(resolver);
+		foreach (var node in new GeneratedVirtualProbe[] { new GeneratedOverrideProbe(), new GeneratedMarkedOverrideProbe() })
+		{
+			injector.Inject(node);
+			Check(node.Calls == 1 && ReferenceEquals(node.Dependency, dependency),
+				"A generated virtual override must run once, whether or not it repeats Inject.");
+			node.Free();
+		}
+		Check(resolver.Calls == 2, "The two generated overrides must each resolve their dependency once.");
 	}
 
 	private static void Check(bool condition, string message)

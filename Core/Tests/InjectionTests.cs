@@ -21,9 +21,20 @@ internal static class InjectionTests
 		var overridden = new OverrideTarget();
 		injector.Inject(overridden);
 		Check(overridden.Calls == 1, "An inherited virtual injection method must run once.");
+		var markedOverride = new MarkedOverrideTarget();
+		injector.Inject(markedOverride);
+		Check(markedOverride.Calls == 1, "Repeating Inject on an override must not duplicate its call.");
+		var invalidDerived = new DuplicateDerivedTarget();
+		Throws<InjectionException>(() => injector.Inject(invalidDerived));
+		Check(invalidDerived.Calls.Count == 0, "Duplicate derived methods must fail before calling a valid base method.");
+		foreach (var invalidOverride in new VirtualTarget[] { new OverrideAndAdditional(), new MarkedOverrideAndAdditional() })
+		{
+			Throws<InjectionException>(() => injector.Inject(invalidOverride));
+			Check(invalidOverride.Calls == 0, "An override plus another injection method is a duplicate, regardless of the repeated attribute.");
+		}
 		var multiple = new MultipleTarget();
-		injector.Inject(multiple);
-		Check(multiple.Calls == 2, "All marked methods must run; unmarked methods must not run.");
+		Throws<InjectionException>(() => injector.Inject(multiple));
+		Check(multiple.Calls == 0, "Multiple injection methods in one class must fail before any calls.");
 		var partiallyInvalid = new PartiallyInvalidTarget();
 		Throws<InjectionException>(() => injector.Inject(partiallyInvalid));
 		Check(partiallyInvalid.Calls == 0, "All method signatures must be validated before invoking the first method.");
@@ -182,6 +193,26 @@ internal static class InjectionTests
 	{
 		public override void Construct() => Calls++;
 	}
+	private sealed class MarkedOverrideTarget : VirtualTarget
+	{
+		[Inject] public override void Construct() => Calls++;
+	}
+	private sealed class DuplicateDerivedTarget : BaseTarget
+	{
+		[Inject] public void First() => Calls.Add("First");
+		[Inject] public void Second() => Calls.Add("Second");
+	}
+	private sealed class OverrideAndAdditional : VirtualTarget
+	{
+		public override void Construct() => Calls++;
+		[Inject] public void Additional() => Calls++;
+	}
+	private sealed class MarkedOverrideAndAdditional : VirtualTarget
+	{
+		[Inject] public override void Construct() => Calls++;
+		[Inject] public void Additional() => Calls++;
+	}
+
 	private sealed class MultipleTarget
 	{
 		public int Calls { get; private set; }

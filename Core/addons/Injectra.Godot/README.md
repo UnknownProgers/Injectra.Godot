@@ -73,5 +73,8 @@ The debugger UI is declared in `Diagnostics/DiagnosticsPanel.tscn`.
 
 The compiler-only package is named `Injectra.Godot.Generation`; publication is not configured yet.
 This repository currently references its `Generator` project as an analyzer.
-The first stage generates direct calls for top-level, nongeneric partial Node classes with one supported local `[Inject]` method.
-Scopes and scene factories select it automatically. Other shapes retain cached reflection fallback.
+The generator emits complete inherited plans for top-level, nongeneric partial Node classes.
+Each class may declare at most one injection method; overrides inherit `[Inject]` and may repeat it without changing calls.
+An override plus another local injection method is a duplicate in either case.
+Duplicate declarations produce `IGG001` at compile time, or `InjectionException` before any calls on reflection fallback.
+Scopes and scene factories select generated plans automatically. Unsupported shapes retain cached reflection fallback.

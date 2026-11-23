@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Injectra.Godot.Generation.Tests;
 
-public sealed class MethodInjectionGeneratorTests
+public sealed partial class MethodInjectionGeneratorTests
 {
 	private static readonly MetadataReference[] References = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
 		.Split(Path.PathSeparator).Append(typeof(IResolver).Assembly.Location).Distinct(StringComparer.Ordinal)
@@ -38,7 +38,7 @@ public sealed class MethodInjectionGeneratorTests
 			""");
 
 		Assert.Contains("resolver.Resolve<global::Service>()", result.Source);
-		Assert.Contains("this.@Construct(argument0)", result.Source);
+		Assert.Contains("((global::Target)this).@Construct(argument0)", result.Source);
 		Assert.DoesNotContain("MethodInfo", result.Source);
 		Assert.DoesNotContain("new object[", result.Source);
 		Assert.Equal(true, Run(result.Compilation));
@@ -116,7 +116,7 @@ public sealed class MethodInjectionGeneratorTests
 				public int Calls;
 				[Inject] public void Construct() => Calls++;
 			}
-			public partial class Child : Parent { [Inject] public void Additional() { } }
+			public class Child : Parent { [Inject] public void Additional() { } }
 			public static class Entry
 			{
 				public static bool Run()
@@ -157,7 +157,6 @@ public sealed class MethodInjectionGeneratorTests
 	[InlineData("public partial class Target<T> : Godot.Node { [Inject] public void Construct(T value) { } }")]
 	[InlineData("public class Target : Godot.Node { [Inject] public void Construct() { } }")]
 	[InlineData("public partial class Target { [Inject] public void Construct() { } }")]
-	[InlineData("public partial class Target : Godot.Node { [Inject] public void First() { } [Inject] public void Second() { } }")]
 	[InlineData("public partial class Holder { public partial class Target : Godot.Node { [Inject] public void Construct() { } } }")]
 	public void TypesOutsideTheFirstStageStayOnReflection(string declaration)
 	{
@@ -187,6 +186,13 @@ public sealed class MethodInjectionGeneratorTests
 
 	private static (CSharpCompilation Compilation, string Source, SyntaxTree[] Generated) Generate(params string[] sources)
 	{
+		var result = GenerateWithDiagnostics(sources);
+		Assert.DoesNotContain(result.Diagnostics, diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+		return (result.Compilation, result.Source, result.Generated);
+	}
+
+	private static (CSharpCompilation Compilation, string Source, SyntaxTree[] Generated, System.Collections.Immutable.ImmutableArray<Diagnostic> Diagnostics) GenerateWithDiagnostics(params string[] sources)
+	{
 		var parse = new CSharpParseOptions(LanguageVersion.Preview);
 		var support = new[]
 		{
@@ -200,11 +206,10 @@ public sealed class MethodInjectionGeneratorTests
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([new MethodInjectionGenerator().AsSourceGenerator()], parseOptions: parse);
 		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out var diagnostics);
-		Assert.DoesNotContain(diagnostics, diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 		var errors = updated.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
 		Assert.True(errors.Length == 0, string.Join(Environment.NewLine, errors.Select(error => error.ToString())));
 		var generated = updated.SyntaxTrees.Skip(compilation.SyntaxTrees.Count()).ToArray();
-		return ((CSharpCompilation)updated, string.Join("\n", generated.Select(tree => tree.ToString())), generated);
+		return ((CSharpCompilation)updated, string.Join("\n", generated.Select(tree => tree.ToString())), generated, diagnostics);
 	}
 
 	private static object? Run(CSharpCompilation compilation)
