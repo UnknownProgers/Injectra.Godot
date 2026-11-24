@@ -12,6 +12,7 @@ internal static class DiagnosticsTests
 		CaptureIsReadOnlyAndIncludesSiblingContainers();
 		AllScopesHaveTheirActualPaths(parent);
 		PanelShowsDetailsAndClearsWhenStopped(parent);
+		DiagnosticsTreeTests.Run(parent);
 		EmptySnapshotIsHandled(parent);
 		GD.Print("PASS: editor diagnostics payload, read-only capture, tree rendering and session cleanup.");
 	}
@@ -65,9 +66,11 @@ internal static class DiagnosticsTests
 		Check(calls == 0, "Inspection must not invoke a factory.");
 		Check(text.Contains("Container #4"), "The snapshot must include sibling and grandchild containers.");
 		Check(text.Contains("Dependencies: unknown (factory)"), "Factory boundaries must be explicit.");
-		Check(rows[1].AsGodotArray()[2].AsString() == "● Created", "Existing instances must precede pending registrations.");
-		Check(rows[2].AsGodotArray()[2].AsString() == "○ Registered", "Pending registrations must remain pending.");
-		Check(rows[1].AsGodotArray()[5].AsString().Contains("Ownership: External"), "Details must report actual ownership.");
+		var existing = rows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == nameof(ExistingService));
+		var pending = rows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == nameof(PendingService));
+		Check(existing[2].AsString() == "● Created", "Existing instances must remain created.");
+		Check(pending[2].AsString() == "○ Registered", "Pending registrations must remain pending.");
+		Check(existing[5].AsString().Contains("Ownership: External"), "Details must report actual ownership.");
 	}
 
 	private static void AllScopesHaveTheirActualPaths(Node parent)

@@ -30,7 +30,7 @@ disabled = true
 
 [node name="Hint" type="Label" parent="Toolbar"]
 layout_mode = 2
-text = "Read-only · created instances first · no services are resolved"
+text = "Read-only · containers first · sorted by name"
 
 [node name="Status" type="Label" parent="."]
 layout_mode = 2
@@ -43,6 +43,7 @@ size_flags_vertical = 3
 split_offset = 220
 
 [node name="Entries" type="Tree" parent="Split"]
+tooltip_text = "Shift + collapse arrow: expand the whole branch. Ctrl + collapse arrow: collapse the whole branch."
 layout_mode = 2
 size_flags_horizontal = 3
 columns = 4
@@ -60,3 +61,5 @@ placeholder_text = "Select a container, registration or dependency."
 [connection signal="pressed" from="Toolbar/Refresh" to="." method="RequestRefresh"]
 [connection signal="pressed" from="Toolbar/Copy" to="." method="CopySnapshot"]
 [connection signal="item_selected" from="Split/Entries" to="." method="UpdateSelection"]
+
+[connection signal="item_collapsed" from="Split/Entries" to="." method="UpdateCollapse"]

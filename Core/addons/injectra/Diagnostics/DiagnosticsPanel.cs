@@ -19,6 +19,8 @@ public partial class DiagnosticsPanel : VBoxContainer
 	[Export] public Button RefreshButton { get; set; } = null!;
 	[Export] public Button CopyButton { get; set; } = null!;
 
+	private bool _changingCollapse;
+
 	internal Action? RefreshRequested { get; set; }
 	internal string SnapshotText { get; private set; } = "";
 
@@ -57,22 +59,55 @@ public partial class DiagnosticsPanel : VBoxContainer
 		Details.Text = "";
 		var root = Entries.CreateItem();
 		var items = new List<TreeItem>();
-		foreach (var value in rows)
+		_changingCollapse = true;
+		try
 		{
-			var row = value.AsGodotArray();
-			var parent = row[0].AsInt32();
-			var item = Entries.CreateItem(parent < 0 ? root : items[parent]);
-			for (var column = 0; column < 4; column++)
+			foreach (var value in rows)
 			{
-				var text = row[column + 1].AsString();
-				item.SetText(column, text);
-				item.SetTooltipText(column, text);
+				var row = value.AsGodotArray();
+				var parent = row[0].AsInt32();
+				var item = Entries.CreateItem(parent < 0 ? root : items[parent]);
+				for (var column = 0; column < 4; column++)
+				{
+					var text = row[column + 1].AsString();
+					item.SetText(column, text);
+					item.SetTooltipText(column, text);
+				}
+				item.SetMetadata(0, row[5]);
+				item.Collapsed = true;
+				items.Add(item);
 			}
-			item.SetMetadata(0, row[5]);
-			items.Add(item);
 		}
+		finally
+		{
+			_changingCollapse = false;
+		}
+
 		CopyButton.Disabled = rows.Count == 0;
 		Status.Text = rows.Count == 0 ? "No active Injectra root scopes found." : $"Snapshot captured · {rows.Count} rows. Select a row for details. Refresh to update.";
+	}
+
+	public void UpdateCollapse(TreeItem item)
+	{
+		if (_changingCollapse)
+			return;
+		if (Input.IsKeyPressed(Key.Ctrl))
+			SetBranchCollapsed(item, true);
+		else if (Input.IsKeyPressed(Key.Shift))
+			SetBranchCollapsed(item, false);
+	}
+
+	internal void SetBranchCollapsed(TreeItem item, bool collapsed)
+	{
+		_changingCollapse = true;
+		try
+		{
+			item.SetCollapsedRecursive(collapsed);
+		}
+		finally
+		{
+			_changingCollapse = false;
+		}
 	}
 
 	public void UpdateSelection() => Details.Text = Entries.GetSelected()?.GetMetadata(0).AsString() ?? "";

@@ -9,7 +9,7 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 
    ```sh
    dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
-   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.7-alpha.3
+   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.8-alpha.1
    dotnet build MyGame.csproj
    ```
 
@@ -61,10 +61,14 @@ Use `Instantiate<Player>(packedScene, parent)` when choosing between scenes shar
 5. Use **Copy text** to copy the Core diagnostic tree to the clipboard.
 
 The view is read-only. It shows container children, registration aliases, created/pending state, lifetimes,
-ownership, overrides, and constructor dependency sources. Created entries come first within each container.
+ownership, overrides, and constructor dependency sources. Containers appear first; registrations are sorted by implementation name. Row labels show only the implementation; contracts are listed in the details panel.
 Container rows use compact numeric labels. Their details show the current Godot scope path; plain C# containers and detached scopes have no
 attached scope path.
 Container IDs are local to the snapshot.
+
+The tree starts collapsed. Expand a registration to see its direct dependencies; nested dependency branches stay closed.
+Shift + click on a collapse arrow expands that entire branch; Ctrl + click collapses it recursively.
+Generic contracts are grouped under entries such as `ILogger<>`; expand a group to inspect its closed registrations.
 Factory dependencies are unknown, and transient instances are not tracked.
 
 The plugin automatically installs an `InjectraDiagnostics` Autoload for editor/runtime communication.

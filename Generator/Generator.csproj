@@ -16,10 +16,10 @@
 		<RepositoryUrl>https://github.com/UnknownProgers/Injectra.Godot</RepositoryUrl>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all"/>
-		<AdditionalFiles Include="AnalyzerReleases.*.md"/>
-		<None Update="README.md" Pack="true" PackagePath="/"/>
-		<None Include="../Core/addons/injectra/icons/icon.png" Pack="true" PackagePath="/Icon.png"/>
-		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+		<AdditionalFiles Include="AnalyzerReleases.*.md" />
+		<None Update="README.md" Pack="true" PackagePath="/" />
+		<None Include="../Core/addons/injectra/icons/icon.png" Pack="true" PackagePath="/Icon.png" />
+		<None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 </Project>

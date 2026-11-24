@@ -18,7 +18,7 @@ Requires a C# Godot .NET project with the matching addon sources installed. The 
 Install alongside the matching addon release:
 
 ```xml
-<PackageReference Include="Injectra.Godot.Generation" Version="0.9.7-alpha.3" PrivateAssets="all"/>
+<PackageReference Include="Injectra.Godot.Generation" Version="0.9.8-alpha.1" PrivateAssets="all"/>
 ```
 
 No manual analyzer references are needed. Install `Injectra` separately for the runtime container and constructor generation.
