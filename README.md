@@ -37,8 +37,8 @@ This addon is for C# projects using the .NET edition of Godot.
 
 ```xml
 <ItemGroup>
-	<PackageReference Include="Injectra" Version="0.7.0-alpha.1" />
-	<PackageReference Include="Injectra.Godot.Generation" Version="0.9.8-alpha.1" PrivateAssets="all"/>
+	<PackageReference Include="Injectra" Version="0.7.2-alpha.1" />
+	<PackageReference Include="Injectra.Godot.Generation" Version="0.9.9-alpha.1" PrivateAssets="all"/>
 </ItemGroup>
 ```
 
@@ -351,7 +351,7 @@ The panel shows scope/container hierarchies, registration aliases, lifetimes, ow
 Containers appear before registrations; registrations are sorted by implementation name. Row labels show only the implementation; contracts are listed in the details panel. Scope paths appear in the details panel.
 Factory dependencies are unknown; transient instances are not tracked. Container IDs belong to the current snapshot.
 
-The tree starts collapsed. Expand a registration to see its direct dependencies; nested dependency branches stay closed.
+Root containers stay expanded; all branches below them start collapsed. Expand a registration to see its direct dependencies; nested dependency branches stay closed.
 Shift + click on a collapse arrow expands that entire branch; Ctrl + click collapses it recursively.
 Generic contracts are grouped under entries such as `ILogger<>`; expand a group to inspect its closed registrations.
 

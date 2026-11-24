@@ -15,6 +15,6 @@
 		<None Include="../../Core/addons/injectra/InjectionException.cs" Link="RuntimeSources/InjectionException.cs" CopyToOutputDirectory="PreserveNewest"/>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Injectra" Version="0.7.0-alpha.1"/>
+		<PackageReference Include="Injectra" Version="0.7.2-alpha.1" />
 	</ItemGroup>
 </Project>

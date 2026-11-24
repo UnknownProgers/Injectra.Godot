@@ -92,8 +92,8 @@ internal static class DiagnosticsTreeTests
 		{
 			panel.ShowSnapshot(DiagnosticsData.Capture([("Root", container)]));
 			var root = panel.Entries.GetRoot().GetFirstChild();
-			Check(Descendants(root).All(item => item.Collapsed), "Every visible branch must initially be collapsed.");
-			root.Collapsed = false;
+			Check(!root.Collapsed && root.DisableFolding, "Root containers must stay open and have no collapse arrow.");
+			Check(Descendants(root).Skip(1).All(item => item.Collapsed), "Branches below the root must initially be collapsed.");
 			var registration = Children(root).Single(item => item.GetText(0) == nameof(GraphRoot));
 			registration.Collapsed = false;
 			var dependency = registration.GetFirstChild();
@@ -107,7 +107,7 @@ internal static class DiagnosticsTreeTests
 			Modifier(Key.Shift, false);
 			Modifier(Key.Ctrl, true);
 			panel.Entries.EmitSignal(Tree.SignalName.ItemCollapsed, root);
-			Check(Descendants(root).All(item => item.Collapsed), "Ctrl plus collapse arrow must collapse the complete branch.");
+			Check(!root.Collapsed && Descendants(root).Skip(1).All(item => item.Collapsed), "Recursive collapse must keep the root open and close its descendants.");
 			Modifier(Key.Ctrl, false);
 			root.Collapsed = false;
 			Modifier(Key.Shift, true);
@@ -115,7 +115,8 @@ internal static class DiagnosticsTreeTests
 			Check(Descendants(registration).All(item => !item.Collapsed), "Shift must expand the selected registration branch.");
 			Check(Children(root).Where(item => item != registration).All(item => item.Collapsed), "Recursive expansion must leave sibling registrations closed.");
 			panel.ShowSnapshot(DiagnosticsData.Capture([("Root", container)]));
-			Check(Descendants(panel.Entries.GetRoot().GetFirstChild()).All(item => item.Collapsed), "Refresh while Shift is held must still start fully collapsed.");
+			var refreshedRoot = panel.Entries.GetRoot().GetFirstChild();
+			Check(!refreshedRoot.Collapsed && Descendants(refreshedRoot).Skip(1).All(item => item.Collapsed), "Refresh while Shift is held must keep only the root open.");
 		}
 		finally
 		{

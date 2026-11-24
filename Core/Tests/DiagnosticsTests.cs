@@ -95,7 +95,7 @@ internal static class DiagnosticsTests
 		{
 			var id = scope.Container.GetDiagnostics().Id;
 			var path = scope.GetPath().ToString();
-			var row = rows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == $"Container #{id}");
+			var row = rows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == $"Container #{id} ({scope.Name})");
 			Check(row[5].AsString().Contains($"Scope path: {path}"), "Container details must include the actual Godot scope path.");
 		}
 		var plainId = plainContainer.GetDiagnostics().Id;
@@ -109,8 +109,11 @@ internal static class DiagnosticsTests
 		var oldPath = inventory.GetPath().ToString();
 		inventory.Name = "RenamedInventory";
 		var refreshedRows = DiagnosticsBridge.CaptureTree(parent.GetTree().Root)[1].AsGodotArray();
+		var inventoryId = inventory.Container.GetDiagnostics().Id;
+		Check(refreshedRows.Select(value => value.AsGodotArray()).Any(row => row[1].AsString() == $"Container #{inventoryId} (RenamedInventory)"),
+			"Refreshing must update the scope node name in the container label.");
 		var previewId = preview.Container.GetDiagnostics().Id;
-		var previewRow = refreshedRows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == $"Container #{previewId}");
+		var previewRow = refreshedRows.Select(value => value.AsGodotArray()).Single(row => row[1].AsString() == $"Container #{previewId} (Preview)");
 		Check(previewRow[5].AsString().Contains(preview.GetPath().ToString()), "Refreshing must update descendant paths after a rename.");
 		Check(!previewRow[5].AsString().Contains(oldPath), "Refreshing must not keep stale scope paths.");
 		detachedScope.Free();

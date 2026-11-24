@@ -8,8 +8,8 @@ A lightweight C# runtime dependency injection addon for Godot, built on [Injectr
 2. Add the container and method generator packages to your game, then build:
 
    ```sh
-   dotnet add MyGame.csproj package Injectra --version 0.7.0-alpha.1
-   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.8-alpha.1
+   dotnet add MyGame.csproj package Injectra --version 0.7.2-alpha.1
+   dotnet add MyGame.csproj package Injectra.Godot.Generation --version 0.9.9-alpha.1
    dotnet build MyGame.csproj
    ```
 
@@ -66,7 +66,7 @@ Container rows use compact numeric labels. Their details show the current Godot 
 attached scope path.
 Container IDs are local to the snapshot.
 
-The tree starts collapsed. Expand a registration to see its direct dependencies; nested dependency branches stay closed.
+Root containers stay expanded; all branches below them start collapsed. Expand a registration to see its direct dependencies; nested dependency branches stay closed.
 Shift + click on a collapse arrow expands that entire branch; Ctrl + click collapses it recursively.
 Generic contracts are grouped under entries such as `ILogger<>`; expand a group to inspect its closed registrations.
 Factory dependencies are unknown, and transient instances are not tracked.

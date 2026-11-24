@@ -74,7 +74,8 @@ public partial class DiagnosticsPanel : VBoxContainer
 					item.SetTooltipText(column, text);
 				}
 				item.SetMetadata(0, row[5]);
-				item.Collapsed = true;
+				item.DisableFolding = parent < 0;
+				item.Collapsed = parent >= 0;
 				items.Add(item);
 			}
 		}
@@ -103,6 +104,8 @@ public partial class DiagnosticsPanel : VBoxContainer
 		try
 		{
 			item.SetCollapsedRecursive(collapsed);
+			if (item.DisableFolding)
+				item.Collapsed = false;
 		}
 		finally
 		{

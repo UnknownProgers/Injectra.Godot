@@ -31,6 +31,8 @@ internal static class DiagnosticsData
 		{
 			var label = $"Container #{container.Id}";
 			var scopePath = paths.GetValueOrDefault(container.Id);
+			if (!string.IsNullOrEmpty(scopePath))
+				label += $" ({scopePath[(scopePath.LastIndexOf('/') + 1)..]})";
 			var row = AddRow(parent, label, "", "", "", $"Container #{container.Id}\nScope path: {scopePath ?? "none (no attached scope)"}\nParent: {container.ParentId?.ToString() ?? "none"}\nLocal entries: {container.Registrations.Count}\nChildren: {container.Children.Count}");
 			foreach (var child in container.Children.OrderBy(child => $"Container #{child.Id}", StringComparer.OrdinalIgnoreCase))
 				AddContainer(child, row, paths);

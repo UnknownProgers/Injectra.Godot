@@ -6,7 +6,7 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Injectra" Version="0.7.0-alpha.1" />
+		<PackageReference Include="Injectra" Version="0.7.2-alpha.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="../Generator/Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
